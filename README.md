@@ -17,8 +17,8 @@ Change the default mappings with the following options:
 
 ```vim
 let g:wildfire_fuel_map = "<ENTER>"
-" This option select the next text closest text object.
+" This option select the next closest text object.
 
 let g:wildfire_water_map = "<BS>"
-" This option select the previous text closest text object.
+" This option select the previous closest text object.
 ```
