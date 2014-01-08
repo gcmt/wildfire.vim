@@ -16,6 +16,14 @@ endif
 let g:loaded_wildfire = 1
 
 
+let g:wildfire_delimiters =
+    \ get(g:, "wildfire_delimiters", ['"', "'", ")", "]", "}"])
+
+let s:_delimiters = {}
+for delim in g:wildfire_delimiters
+    let s:_delimiters[delim] = 1
+endfor
+
 let g:wildfire_fuel_map =
     \ get(g:, "wildfire_fuel_map", "<ENTER>")
 
@@ -27,7 +35,7 @@ let g:wildfire_water_map =
 " =============================================================================
 
 " variables that provide some sort of statefulness between function calls
-let s:candidates = {}
+let s:delimiters = {}
 let s:winners_history = []
 let s:origin = []
 
@@ -35,20 +43,13 @@ let s:origin = []
 fu! s:Wildfire(burning, water, repeat)
 
     if !a:burning || empty(s:origin)
-        " init
-        let s:origin = getpos(".")
-        let s:candidates = {'"': 1, "'": 1, ")": 1, "]": 1, "}": 1}
-        let s:winners_history = []
+        cal s:init()
     endif
 
     cal setpos(".", s:origin)
 
     if a:water
-        if len(s:winners_history) > 1
-            let exwinner = remove(s:winners_history, -1)
-            let s:candidates[strpart(exwinner[0], len(exwinner[0])-1, 1)] -= 1
-            exe "norm! \<ESC>" . get(s:winners_history, -1)[0]
-        endif
+        cal s:prev()
         return
     endif
 
@@ -60,10 +61,10 @@ fu! s:Wildfire(burning, water, repeat)
         exe "norm! \<ESC>"
         cal setpos(".", s:origin)
 
-        let performances = {}
-        for candidate in keys(s:candidates)
+        let candidates = {}
+        for delim in keys(s:delimiters)
 
-            let selection = "v" . s:candidates[candidate] . "i" . candidate
+            let selection = "v" . s:delimiters[delim] . "i" . delim
             exe "norm! v\<ESC>" . selection . "\<ESC>"
             let [startline, startcol] = [line("'<"), col("'<")]
             let [endline, endcol] = [line("'>"), col("'>")]
@@ -71,10 +72,10 @@ fu! s:Wildfire(burning, water, repeat)
             if startline == endline
                 if startcol != endcol && curcol >= startcol && curcol <= endcol
                     let size = strlen(strpart(getline("'<"), startcol, endcol-startcol+1))
-                    let cond1 = !s:already_a_winner("v".(s:candidates[candidate]-1)."i".candidate, size-2)
+                    let cond1 = !s:already_a_winner("v".(s:delimiters[delim]-1)."i".delim, size-2)
                     let cond2 = !s:already_a_winner(selection, size)
                     if cond1 && cond2
-                        let performances[size] = selection
+                        let candidates[size] = selection
                     endif
                 endif
             endif
@@ -82,19 +83,36 @@ fu! s:Wildfire(burning, water, repeat)
             cal winrestview(winview)
 
         endfor
-
-        if len(performances)
-            let minsize = min(keys(performances))
-            let winner = performances[minsize]
-            let s:winners_history = add(s:winners_history, [winner, minsize])
-            let s:candidates[strpart(winner, len(winner)-1, 1)] += 1
-            exe "norm! \<ESC>" . winner
-        elseif len(s:winners_history)
-            exe "norm! \<ESC>" . get(s:winners_history, -1)[0]
-        endif
+        cal s:next(candidates)
 
     endfor
 
+endfu
+
+fu! s:init()
+    let s:origin = getpos(".")
+    let s:delimiters = copy(s:_delimiters)
+    let s:winners_history = []
+endfu
+
+fu! s:prev()
+    if len(s:winners_history) > 1
+        let exwinner = remove(s:winners_history, -1)
+        let s:delimiters[strpart(exwinner[0], len(exwinner[0])-1, 1)] -= 1
+        exe "norm! \<ESC>" . get(s:winners_history, -1)[0]
+    endif
+endfu
+
+fu! s:next(candidates)
+    if len(a:candidates)
+        let minsize = min(keys(a:candidates))
+        let winner = a:candidates[minsize]
+        let s:winners_history = add(s:winners_history, [winner, minsize])
+        let s:delimiters[strpart(winner, len(winner)-1, 1)] += 1
+        exe "norm! \<ESC>" . winner
+    elseif len(s:winners_history)
+        exe "norm! \<ESC>" . get(s:winners_history, -1)[0]
+    endif
 endfu
 
 fu! s:already_a_winner(selection, size)
