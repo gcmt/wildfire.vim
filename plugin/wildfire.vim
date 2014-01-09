@@ -74,8 +74,9 @@ fu! s:Wildfire(burning, water, repeat)
                     let size = strlen(strpart(getline("'<"), startcol, endcol-startcol+1))
                     let cond1 = !s:already_a_winner("v".(s:delimiters[delim]-1)."i".delim, size-2)
                     let cond2 = !s:already_a_winner(selection, size)
-                    if cond1 && cond2
-                        let candidates[size] = selection
+                    let cond3 = s:bigger_than_past_winner(startcol, endcol)
+                    if cond1 && cond2 && cond3
+                        let candidates[size] = [selection, startcol, endcol]
                     endif
                 endif
             endif
@@ -97,6 +98,7 @@ endfu
 
 fu! s:prev()
     if len(s:winners_history) > 1
+        " select the previous closest text object
         let exwinner = remove(s:winners_history, -1)
         let s:delimiters[strpart(exwinner[0], len(exwinner[0])-1, 1)] -= 1
         exe "norm! \<ESC>" . get(s:winners_history, -1)[0]
@@ -105,12 +107,16 @@ endfu
 
 fu! s:next(candidates)
     if len(a:candidates)
+        " select the next closest text object
         let minsize = min(keys(a:candidates))
-        let winner = a:candidates[minsize]
-        let s:winners_history = add(s:winners_history, [winner, minsize])
+        let winner = a:candidates[minsize][0]
+        let startcol = a:candidates[minsize][1]
+        let endcol = a:candidates[minsize][2]
+        let s:winners_history = add(s:winners_history, [winner, minsize, startcol, endcol])
         let s:delimiters[strpart(winner, len(winner)-1, 1)] += 1
         exe "norm! \<ESC>" . winner
     elseif len(s:winners_history)
+        " get stuck on the last selection
         exe "norm! \<ESC>" . get(s:winners_history, -1)[0]
     endif
 endfu
@@ -122,6 +128,18 @@ fu! s:already_a_winner(selection, size)
         endif
     endfor
     return 0
+endfu
+
+fu! s:bigger_than_past_winner(startcol, endcol)
+    if len(s:winners_history)
+        let lastwinner = get(s:winners_history, -1)
+        if  a:startcol < lastwinner[2] && a:endcol > lastwinner[3]
+            return 1
+        else
+            return 0
+        endif
+    endif
+    return 1
 endfu
 
 
