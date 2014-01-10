@@ -60,7 +60,7 @@ fu! s:Wildfire(burning, water, repeat)
     let winview = winsaveview()
     let [curline, curcol] = [s:origin[1], s:origin[2]]
 
-    exe "norm! \<ESC>"
+    norm! "\<ESC>"
     cal setpos(".", s:origin)
 
     let candidates = {}
