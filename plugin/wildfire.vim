@@ -46,7 +46,7 @@ fu! s:Wildfire(burning, water, repeat)
         return
     endif
 
-    if !a:burning || empty(s:origin)
+    if !a:burning || empty(s:origin) || s:origin[1] != line(".")
         cal s:init()
     endif
 
