@@ -42,6 +42,10 @@ let s:origin = []
 
 fu! s:Wildfire(burning, water, repeat)
 
+    if !a:repeat
+        return
+    endif
+
     if !a:burning || empty(s:origin)
         cal s:init()
     endif
@@ -56,37 +60,38 @@ fu! s:Wildfire(burning, water, repeat)
     let winview = winsaveview()
     let [curline, curcol] = [s:origin[1], s:origin[2]]
 
-    for i in range(1, a:repeat)
+    exe "norm! \<ESC>"
+    cal setpos(".", s:origin)
 
-        exe "norm! \<ESC>"
-        cal setpos(".", s:origin)
+    let candidates = {}
+    for delim in keys(s:delimiters)
 
-        let candidates = {}
-        for delim in keys(s:delimiters)
+        let selection = "v" . s:delimiters[delim] . "i" . delim
+        exe "norm! v\<ESC>" . selection . "\<ESC>"
+        let [startline, startcol] = [line("'<"), col("'<")]
+        let [endline, endcol] = [line("'>"), col("'>")]
 
-            let selection = "v" . s:delimiters[delim] . "i" . delim
-            exe "norm! v\<ESC>" . selection . "\<ESC>"
-            let [startline, startcol] = [line("'<"), col("'<")]
-            let [endline, endcol] = [line("'>"), col("'>")]
+        if startline != endline
+            continue
+        endif
 
-            if startline == endline
-                if startcol != endcol && curcol >= startcol && curcol <= endcol
-                    let size = strlen(strpart(getline("'<"), startcol, endcol-startcol+1))
-                    let cond1 = !s:already_a_winner("v".(s:delimiters[delim]-1)."i".delim, size-2)
-                    let cond2 = !s:already_a_winner(selection, size)
-                    let cond3 = s:bigger_than_past_winner(startcol, endcol)
-                    if cond1 && cond2 && cond3
-                        let candidates[size] = [selection, startcol, endcol]
-                    endif
-                endif
+        if startcol != endcol && curcol >= startcol && curcol <= endcol
+            let size = strlen(strpart(getline("'<"), startcol, endcol-startcol+1))
+            let cond1 = !s:already_a_winner("v".(s:delimiters[delim]-1)."i".delim, size-2)
+            let cond2 = !s:already_a_winner(selection, size)
+            let cond3 = s:bigger_than_past_winner(startcol, endcol)
+            if cond1 && cond2 && cond3
+                let candidates[size] = [selection, startcol, endcol]
             endif
+        endif
 
-            cal winrestview(winview)
-
-        endfor
-        cal s:next(candidates)
+        cal winrestview(winview)
 
     endfor
+
+    cal s:next(candidates)
+
+    cal s:Wildfire(1, 0, a:repeat-1)
 
 endfu
 
