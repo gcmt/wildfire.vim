@@ -81,7 +81,7 @@ fu! s:Wildfire(burning, water, repeat)
             let size = strlen(strpart(getline("'<"), startcol, endcol-startcol+1))
             let cond1 = !s:already_a_winner("v".(s:delimiters[delim]-1)."i".delim, size-2)
             let cond2 = !s:already_a_winner(selection, size)
-            let cond3 = s:bigger_than_past_winner(startcol, endcol)
+            let cond3 = s:bigger_than_last_winner(startcol, endcol)
             if cond1 && cond2 && cond3
                 let candidates[size] = [selection, startcol, endcol]
             endif
@@ -135,7 +135,7 @@ fu! s:already_a_winner(selection, size)
     return 0
 endfu
 
-fu! s:bigger_than_past_winner(startcol, endcol)
+fu! s:bigger_than_last_winner(startcol, endcol)
     if len(s:winners_history)
         let lastwinner = get(s:winners_history, -1)
         if  a:startcol < lastwinner[2] && a:endcol > lastwinner[3]
