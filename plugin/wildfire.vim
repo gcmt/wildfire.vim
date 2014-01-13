@@ -71,6 +71,8 @@ fu! s:Wildfire(burning, water, repeat)
         let [startline, startcol] = [line("'<"), col("'<")]
         let [endline, endcol] = [line("'>"), col("'>")]
 
+        cal winrestview(winview)
+
         if startline != endline
             continue
         endif
@@ -84,8 +86,6 @@ fu! s:Wildfire(burning, water, repeat)
                 let candidates[size] = [selection, startcol, endcol]
             endif
         endif
-
-        cal winrestview(winview)
 
     endfor
 
