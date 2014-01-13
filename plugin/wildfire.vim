@@ -81,13 +81,13 @@ fu! s:Wildfire(burning, water, repeat)
 
         if startcol != endcol && curcol >= startcol && curcol <= endcol
             let size = strlen(strpart(line, startcol, endcol-startcol+1))
-            let cond1 = !s:already_a_winner("v".(s:delimiters[delim]-1)."i".delim, size-2)
-            let cond2 = !s:already_a_winner(selection, size)
-            let cond3 = 1
+            let [cond1, cond2] = [1, 1]
             if delim == "'" || delim == '"'
-                let cond3 = !s:odd_quotes(delim, before) && !s:odd_quotes(delim, after)
+                " special checks for strings
+                let cond1 = !s:already_a_winner("v".(s:delimiters[delim]-1)."i".delim)
+                let cond2 = !s:odd_quotes(delim, before) && !s:odd_quotes(delim, after)
             endif
-            if cond1 && cond2 && cond3
+            if cond1 && cond2
                 let candidates[size] = [selection, startcol, endcol]
             endif
         endif
@@ -131,9 +131,9 @@ fu! s:next(candidates)
     endif
 endfu
 
-fu! s:already_a_winner(selection, size)
+fu! s:already_a_winner(selection)
     for winner in s:winners_history
-        if winner[0] == a:selection && winner[1] == a:size
+        if winner[0] == a:selection
             return 1
         endif
     endfor
