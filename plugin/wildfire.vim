@@ -70,6 +70,8 @@ fu! s:Wildfire(burning, water, repeat)
         exe "norm! v\<ESC>" . selection . "\<ESC>"
         let [startline, startcol] = [line("'<"), col("'<")]
         let [endline, endcol] = [line("'>"), col("'>")]
+        let line = getline("'<")
+        let [before, after] = [line[:startcol-3], line[endcol+1:]]
 
         cal winrestview(winview)
 
@@ -78,10 +80,13 @@ fu! s:Wildfire(burning, water, repeat)
         endif
 
         if startcol != endcol && curcol >= startcol && curcol <= endcol
-            let size = strlen(strpart(getline("'<"), startcol, endcol-startcol+1))
+            let size = strlen(strpart(line, startcol, endcol-startcol+1))
             let cond1 = !s:already_a_winner("v".(s:delimiters[delim]-1)."i".delim, size-2)
             let cond2 = !s:already_a_winner(selection, size)
-            let cond3 = s:bigger_than_last_winner(startcol, endcol)
+            let cond3 = 1
+            if delim == "'" || delim == '"'
+                let cond3 = !s:odd_quotes(delim, before) && !s:odd_quotes(delim, after)
+            endif
             if cond1 && cond2 && cond3
                 let candidates[size] = [selection, startcol, endcol]
             endif
@@ -135,16 +140,14 @@ fu! s:already_a_winner(selection, size)
     return 0
 endfu
 
-fu! s:bigger_than_last_winner(startcol, endcol)
-    if len(s:winners_history)
-        let lastwinner = get(s:winners_history, -1)
-        if  a:startcol < lastwinner[2] && a:endcol > lastwinner[3]
-            return 1
-        else
-            return 0
+fu! s:odd_quotes(quote, s)
+    let n = 0
+    for i in range(0, strlen(a:s))
+        if a:s[i] == a:quote && !(i > 0 && a:s[i-1] == "\\")
+            let n += 1
         endif
-    endif
-    return 1
+    endfor
+    return n % 2 != 0
 endfu
 
 
