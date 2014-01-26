@@ -68,26 +68,20 @@ fu! s:Wildfire(burning, water, repeat)
 
         let selection = "v" . s:delimiters[delim] . "i" . delim
         exe "norm! v\<ESC>" . selection . "\<ESC>"
+
         let [startline, startcol] = [line("'<"), col("'<")]
         let [endline, endcol] = [line("'>"), col("'>")]
-        let line = getline("'<")
-        let [before, after] = [line[:startcol-3], line[endcol+1:]]
+        let before = getline("'<")[:startcol-3]
+        let after = getline("'<")[endcol+1:]
 
         cal winrestview(winview)
 
-        if startline != endline
-            continue
-        endif
-
-        if startcol != endcol && curcol >= startcol && curcol <= endcol
-            let size = strlen(strpart(line, startcol, endcol-startcol+1))
-            let [cond1, cond2] = [1, 1]
-            if delim == "'" || delim == '"'
-                " special checks for strings
-                let cond1 = !s:already_a_winner("v".(s:delimiters[delim]-1)."i".delim)
-                let cond2 = !s:odd_quotes(delim, before) && !s:odd_quotes(delim, after)
-            endif
-            if cond1 && cond2
+        if startline == endline && startcol != endcol && curcol >= startcol && curcol <= endcol
+            let size = strlen(strpart(getline("'<"), startcol, endcol-startcol+1))
+            let cond1 = delim == "'" || delim == '"'
+            let cond2 = !s:already_a_winner("v".(s:delimiters[delim]-1)."i".delim)
+            let cond3 = !s:odd_quotes(delim, before) && !s:odd_quotes(delim, after)
+            if !cond1 || (cond1 && cond2 && cond3)
                 let candidates[size] = [selection, startcol, endcol]
             endif
         endif
