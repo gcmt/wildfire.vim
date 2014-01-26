@@ -17,7 +17,7 @@ let g:loaded_wildfire = 1
 
 
 let g:wildfire_delimiters =
-    \ get(g:, "wildfire_delimiters", ['"', "'", ")", "]", "}"])
+    \ get(g:, "wildfire_delimiters", ['"', "'", ")", "]", "}", "t"])
 
 let s:_delimiters = {}
 for delim in g:wildfire_delimiters
