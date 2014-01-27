@@ -16,12 +16,9 @@ endif
 let g:loaded_wildfire = 1
 
 
-let g:wildfire_delimiters =
-    \ get(g:, "wildfire_delimiters", ['"', "'", ")", "]", "}", "t"])
-
-let s:_delimiters = {}
-for delim in g:wildfire_delimiters
-    let s:_delimiters[delim] = 1
+let s:wildfire_delimiters = {}
+for delim in get(g:, "wildfire_delimiters", ['"', "'", ")", "]", "}", "t"])
+    let s:wildfire_delimiters[delim] = 1
 endfor
 
 let g:wildfire_fuel_map =
@@ -96,7 +93,7 @@ endfu
 
 fu! s:init()
     let s:origin = getpos(".")
-    let s:delimiters = copy(s:_delimiters)
+    let s:delimiters = copy(s:wildfire_delimiters)
     let s:winners_history = []
 endfu
 
