@@ -3,6 +3,8 @@
 With *Wildfire* you can quickly select the closest text object among a group of candidates. By
 default candidates are `i'`, `i"`, `i)`, `i]`, `i}` and `ip`.
 
+Learn more about text objects with `:help text-objects`.
+
 ### Usage
 
 Press `<ENTER>` in normal mode to select the closest text object. Keep pressing for selecting the
