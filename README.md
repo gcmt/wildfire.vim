@@ -1,8 +1,7 @@
 ## wildfire.vim
 
-Fast selection of the closest paragraph or text object delimited by *single* or *double quotes*,
-*parentheses*, *square brackets* or *curly braces*.
-
+With *Wildfire* you can quickly select the closest text object among a group of candidates. By
+default candidates are `i'`, `i"`, `i)`, `i]`, `i}` and `ip`.
 
 ### Usage
 
@@ -22,15 +21,11 @@ let g:wildfire_fuel_map = "<ENTER>"  " This selects the next closest text object
 let g:wildfire_water_map = "<BS>"  " This selects the previous closest text object.
 ```
 
-### Advanced usage
-
-By default, *Wildfire* selects the closest paragraph or text object delimited by quotes,
-parentheses, brackets or braces. Behind the scenes, Wildfire executes respectively the commands
-`vip`, `vi'`, `vi"`, `vi)`, `vi]` and `vi}`. With the following option you can decide which text
-objects to consider:
+By default, *Wildfire* selects the text objects `i'`, `i"`, `i)`, `i]`, `i}` and `ip`, but you can
+customize which text objects are considered with the following option
 
 ```vim
-let g:wildfire_objects = ["p", ")", "]", "}", "'", '"']
+let g:wildfire_objects = ["i'", 'i"', "i)", "i]", "i}", "ip"]
 ```
 
 ### Tip
@@ -39,9 +34,10 @@ If you often work with Html you certainly know about the ability of Vim to selec
 the commands `vat` and `vit`. When dealing with Html files you may find useful to set the
 following variable in your `.virmc`
 
-```vim
-let g:wildfire_objects = ["t"]
+```                                    vim
+let g:wildfire_objects = ["it"]  " or `at`
 ```
+
 
 
 
