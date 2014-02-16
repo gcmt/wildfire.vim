@@ -27,7 +27,7 @@ let g:wildfire_water_map = "<BS>"  " This selects the previous closest text obje
 By default, *Wildfire* selects the closest paragraph or text object delimited by quotes,
 parentheses, brackets or braces. Behind the scenes, Wildfire executes respectively the commands
 `vip`, `vi'`, `vi"`, `vi)`, `vi]` and `vi}`. With the following option you can decide which text
-objects to consider when selecting the closest text object:
+objects to consider:
 
 ```vim
 let g:wildfire_objects = ["p", ")", "]", "}", "'", '"']
@@ -36,7 +36,7 @@ let g:wildfire_objects = ["p", ")", "]", "}", "'", '"']
 ### Tip
 
 If you often work with Html you certainly know about the ability of Vim to select tag objects with
-the commands `vat` and `vit`. So, when dealing with Html files you may find useful to set the
+the commands `vat` and `vit`. When dealing with Html files you may find useful to set the
 following variable in your `.virmc`
 
 ```vim
