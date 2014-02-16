@@ -1,6 +1,6 @@
 " =============================================================================
 " File: wildfire.vim
-" Description: Fast selection of the closest text object objectited any of ', ", ), ] or }
+" Description: Smart selection of the closest text object
 " Mantainer: Giacomo Comitti (https://github.com/gcmt)
 " Url: https://github.com/gcmt/wildfire.vim
 " License: MIT
