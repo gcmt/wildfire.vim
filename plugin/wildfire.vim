@@ -20,7 +20,7 @@ let g:loaded_wildfire = 1
 " =============================================================================
 
 let g:wildfire_objects =
-    \ get(g:, "wildfire_objects", ["p", ")", "]", "}", "'", '"'])
+    \ get(g:, "wildfire_objects", ["ip", "i)", "i]", "i}", "i'", 'i"'])
 
 let g:wildfire_fuel_map =
     \ get(g:, "wildfire_fuel_map", "<ENTER>")
@@ -59,7 +59,7 @@ fu! s:Wildfire(burning, water, repeat)
     let candidates = {}
     for object in keys(s:objects)
 
-        let selection = "v" . s:objects[object] . "i" . object
+        let selection = "v" . s:objects[object] . object
         exe "sil! norm! \<ESC>v\<ESC>" . selection . "\<ESC>"
         let [startline, startcol, endline, endcol] = s:get_vblock_vertices()
 
@@ -69,9 +69,9 @@ fu! s:Wildfire(burning, water, repeat)
 
             let size = s:get_vblock_size(startline, startcol, endline, endcol)
 
-            if (object == "'" || object == '"') && startline == endline
+            if (object =~ "'" || object =~ "\"") && startline == endline
                 let [before, after] = [getline("'<")[:startcol-3],  getline("'<")[endcol+1:]]
-                let cond1 = !s:already_a_winner("v".(s:objects[object]-1)."i".object)
+                let cond1 = !s:already_a_winner("v".(s:objects[object]-1).object)
                 let cond2 = !s:odd_quotes(object, before) && !s:odd_quotes(object, after)
                 if cond1 && cond2
                     let candidates[size] = selection
@@ -106,7 +106,7 @@ endfu
 fu! s:select_smaller_block()
     if len(s:winners_history) > 1
         let last_winner = remove(s:winners_history, -1)
-        let s:objects[strpart(last_winner, len(last_winner)-1, 1)] -= 1
+        let s:objects[strpart(last_winner, len(last_winner)-2)] -= 1
         exe "norm! \<ESC>" . get(s:winners_history, -1)
     endif
 endfu
@@ -117,7 +117,7 @@ fu! s:select_bigger_block(candidates)
         let winner = a:candidates[minsize]
         let [startcol, endcol] = [a:candidates[minsize], a:candidates[minsize]]
         let s:winners_history = add(s:winners_history, winner)
-        let s:objects[strpart(winner, len(winner)-1, 1)] += 1
+        let s:objects[strpart(winner, len(winner)-2)] += 1
         exe "norm! \<ESC>" . winner
     elseif len(s:winners_history)
         " get stuck on the last selection
