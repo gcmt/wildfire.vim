@@ -60,7 +60,7 @@ fu! s:Wildfire(burning, water, repeat)
     for delim in keys(s:delimiters)
 
         let selection = "v" . s:delimiters[delim] . "i" . delim
-        exe "norm! \<ESC>v\<ESC>" . selection . "\<ESC>"
+        exe "sil! norm! \<ESC>v\<ESC>" . selection . "\<ESC>"
         let [startline, startcol, endline, endcol] = s:get_vblock_vertices()
 
         cal winrestview(winview)
