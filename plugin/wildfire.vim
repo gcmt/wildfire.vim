@@ -1,6 +1,6 @@
 " =============================================================================
 " File: wildfire.vim
-" Description: Fast selection of the closest text object delimited any of ', ", ), ] or }
+" Description: Fast selection of the closest text object objectited any of ', ", ), ] or }
 " Mantainer: Giacomo Comitti (https://github.com/gcmt)
 " Url: https://github.com/gcmt/wildfire.vim
 " License: MIT
@@ -19,8 +19,8 @@ let g:loaded_wildfire = 1
 " Settings
 " =============================================================================
 
-let g:wildfire_delimiters =
-    \ get(g:, "wildfire_delimiters", ["p", ")", "]", "}", "'", '"'])
+let g:wildfire_objects =
+    \ get(g:, "wildfire_objects", ["p", ")", "]", "}", "'", '"'])
 
 let g:wildfire_fuel_map =
     \ get(g:, "wildfire_fuel_map", "<ENTER>")
@@ -32,7 +32,7 @@ let g:wildfire_water_map =
 " Functions
 " =============================================================================
 
-let s:delimiters = {}
+let s:objects = {}
 let s:winners_history = []
 let s:origin = []
 
@@ -57,9 +57,9 @@ fu! s:Wildfire(burning, water, repeat)
     let winview = winsaveview()
 
     let candidates = {}
-    for delim in keys(s:delimiters)
+    for object in keys(s:objects)
 
-        let selection = "v" . s:delimiters[delim] . "i" . delim
+        let selection = "v" . s:objects[object] . "i" . object
         exe "sil! norm! \<ESC>v\<ESC>" . selection . "\<ESC>"
         let [startline, startcol, endline, endcol] = s:get_vblock_vertices()
 
@@ -69,10 +69,10 @@ fu! s:Wildfire(burning, water, repeat)
 
             let size = s:get_vblock_size(startline, startcol, endline, endcol)
 
-            if (delim == "'" || delim == '"') && startline == endline
+            if (object == "'" || object == '"') && startline == endline
                 let [before, after] = [getline("'<")[:startcol-3],  getline("'<")[endcol+1:]]
-                let cond1 = !s:already_a_winner("v".(s:delimiters[delim]-1)."i".delim)
-                let cond2 = !s:odd_quotes(delim, before) && !s:odd_quotes(delim, after)
+                let cond1 = !s:already_a_winner("v".(s:objects[object]-1)."i".object)
+                let cond2 = !s:odd_quotes(object, before) && !s:odd_quotes(object, after)
                 if cond1 && cond2
                     let candidates[size] = selection
                 endif
@@ -98,15 +98,15 @@ endfu
 fu! s:init()
     let s:origin = getpos(".")
     let s:winners_history = []
-    for delim in g:wildfire_delimiters
-        let s:delimiters[delim] = 1
+    for object in g:wildfire_objects
+        let s:objects[object] = 1
     endfor
 endfu
 
 fu! s:select_smaller_block()
     if len(s:winners_history) > 1
         let last_winner = remove(s:winners_history, -1)
-        let s:delimiters[strpart(last_winner, len(last_winner)-1, 1)] -= 1
+        let s:objects[strpart(last_winner, len(last_winner)-1, 1)] -= 1
         exe "norm! \<ESC>" . get(s:winners_history, -1)
     endif
 endfu
@@ -117,7 +117,7 @@ fu! s:select_bigger_block(candidates)
         let winner = a:candidates[minsize]
         let [startcol, endcol] = [a:candidates[minsize], a:candidates[minsize]]
         let s:winners_history = add(s:winners_history, winner)
-        let s:delimiters[strpart(winner, len(winner)-1, 1)] += 1
+        let s:objects[strpart(winner, len(winner)-1, 1)] += 1
         exe "norm! \<ESC>" . winner
     elseif len(s:winners_history)
         " get stuck on the last selection

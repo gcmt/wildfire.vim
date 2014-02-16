@@ -30,7 +30,7 @@ parentheses, brackets or braces. Behind the scenes, Wildfire executes respective
 objects to consider when selecting the closest text object:
 
 ```vim
-let g:wildfire_delimiters = ["p", ")", "]", "}", "'", '"']
+let g:wildfire_objects = ["p", ")", "]", "}", "'", '"']
 ```
 
 ### Tip
@@ -40,7 +40,7 @@ the commands `vat` and `vit`. So, when dealing with Html files you may find usef
 following variable in your `.virmc`
 
 ```vim
-let g:wildfire_delimiters = ["t"]
+let g:wildfire_objects = ["t"]
 ```
 
 
