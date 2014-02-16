@@ -19,10 +19,8 @@ let g:loaded_wildfire = 1
 " Settings
 " =============================================================================
 
-let s:wildfire_delimiters = {}
-for delim in get(g:, "wildfire_delimiters", ["p", ")", "]", "}", "'", '"'])
-    let s:wildfire_delimiters[delim] = 1
-endfor
+let g:wildfire_delimiters =
+    \ get(g:, "wildfire_delimiters", ["p", ")", "]", "}", "'", '"'])
 
 let g:wildfire_fuel_map =
     \ get(g:, "wildfire_fuel_map", "<ENTER>")
@@ -100,8 +98,10 @@ endfu
 " to initialize state variables
 fu! s:init()
     let s:origin = getpos(".")
-    let s:delimiters = copy(s:wildfire_delimiters)
     let s:winners_history = []
+    for delim in g:wildfire_delimiters
+        let s:delimiters[delim] = 1
+    endfor
 endfu
 
 fu! s:select_smaller_block()
