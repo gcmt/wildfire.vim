@@ -7,7 +7,7 @@
 " =============================================================================
 
 
-" INIT
+" Init
 " =============================================================================
 
 if exists("g:loaded_wildfire") || &cp
@@ -16,8 +16,11 @@ endif
 let g:loaded_wildfire = 1
 
 
+" Settings
+" =============================================================================
+
 let s:wildfire_delimiters = {}
-for delim in get(g:, "wildfire_delimiters", ['"', "'", ")", "]", "}", "t"])
+for delim in get(g:, "wildfire_delimiters", ["p", ")", "]", "}", "'", '"'])
     let s:wildfire_delimiters[delim] = 1
 endfor
 
@@ -28,10 +31,9 @@ let g:wildfire_water_map =
     \ get(g:, "wildfire_water_map", "<BS>")
 
 
-" FUNCTIONS
+" Functions
 " =============================================================================
 
-" variables that provide some sort of statefulness between function calls
 let s:delimiters = {}
 let s:winners_history = []
 let s:origin = []
@@ -43,88 +45,92 @@ fu! s:Wildfire(burning, water, repeat)
         return
     endif
 
-    if !a:burning || empty(s:origin) || s:origin[1] != line(".")
+    if !a:burning || empty(s:origin)
         cal s:init()
     endif
 
     cal setpos(".", s:origin)
 
     if a:water
-        cal s:prev()
+        cal s:select_smaller_block()
         return
     endif
 
     let winview = winsaveview()
     let [curline, curcol] = [s:origin[1], s:origin[2]]
 
-    norm! "\<ESC>"
-    cal setpos(".", s:origin)
-
     let candidates = {}
     for delim in keys(s:delimiters)
 
         let selection = "v" . s:delimiters[delim] . "i" . delim
-        exe "norm! v\<ESC>" . selection . "\<ESC>"
-
-        let [startline, startcol] = [line("'<"), col("'<")]
-        let [endline, endcol] = [line("'>"), col("'>")]
-        let before = getline("'<")[:startcol-3]
-        let after = getline("'<")[endcol+1:]
+        exe "norm! \<ESC>v\<ESC>" . selection . "\<ESC>"
+        let [startline, startcol, endline, endcol] = s:get_vblock_vertices()
 
         cal winrestview(winview)
 
-        if startline == endline && startcol != endcol && curcol >= startcol && curcol <= endcol
-            let size = strlen(strpart(getline("'<"), startcol, endcol-startcol+1))
-            let cond1 = delim == "'" || delim == '"'
-            let cond2 = !s:already_a_winner("v".(s:delimiters[delim]-1)."i".delim)
-            let cond3 = !s:odd_quotes(delim, before) && !s:odd_quotes(delim, after)
-            if !cond1 || (cond1 && cond2 && cond3)
-                let candidates[size] = [selection, startcol, endcol]
+        if startline != endline || startcol != endcol
+
+            let size = s:get_vblock_size(startline, startcol, endline, endcol)
+
+            if (delim == "'" || delim == '"') && startline == endline
+                let [before, after] = [getline("'<")[:startcol-3],  getline("'<")[endcol+1:]]
+                let cond1 = !s:already_a_winner("v".(s:delimiters[delim]-1)."i".delim)
+                let cond2 = !s:odd_quotes(delim, before) && !s:odd_quotes(delim, after)
+                if cond1 && cond2
+                    let candidates[size] = selection
+                endif
+            else
+                let candidates[size] = selection
             endif
+
         endif
 
     endfor
 
-    cal s:next(candidates)
+    cal s:select_bigger_block(candidates)
 
     cal s:Wildfire(1, 0, a:repeat-1)
 
 endfu
 
+
+" Helpers
+" =============================================================================
+
+" to initialize state variables
 fu! s:init()
     let s:origin = getpos(".")
     let s:delimiters = copy(s:wildfire_delimiters)
     let s:winners_history = []
 endfu
 
-fu! s:prev()
+fu! s:select_smaller_block()
     if len(s:winners_history) > 1
-        " select the previous closest text object
-        let exwinner = remove(s:winners_history, -1)
-        let s:delimiters[strpart(exwinner[0], len(exwinner[0])-1, 1)] -= 1
-        exe "norm! \<ESC>" . get(s:winners_history, -1)[0]
+        let last_winner = remove(s:winners_history, -1)
+        let s:delimiters[strpart(last_winner, len(last_winner)-1, 1)] -= 1
+        exe "norm! \<ESC>" . get(s:winners_history, -1)
     endif
 endfu
 
-fu! s:next(candidates)
+fu! s:select_bigger_block(candidates)
     if len(a:candidates)
-        " select the next closest text object
         let minsize = min(keys(a:candidates))
-        let winner = a:candidates[minsize][0]
-        let startcol = a:candidates[minsize][1]
-        let endcol = a:candidates[minsize][2]
-        let s:winners_history = add(s:winners_history, [winner, minsize, startcol, endcol])
+        let winner = a:candidates[minsize]
+        let [startcol, endcol] = [a:candidates[minsize], a:candidates[minsize]]
+        let s:winners_history = add(s:winners_history, winner)
         let s:delimiters[strpart(winner, len(winner)-1, 1)] += 1
         exe "norm! \<ESC>" . winner
     elseif len(s:winners_history)
         " get stuck on the last selection
-        exe "norm! \<ESC>" . get(s:winners_history, -1)[0]
+        exe "norm! \<ESC>" . get(s:winners_history, -1)
+    else
+        exe "norm! \<ESC>"
     endif
 endfu
 
 fu! s:already_a_winner(selection)
     for winner in s:winners_history
-        if winner[0] == a:selection
+        if winner == a:selection
             return 1
         endif
     endfor
@@ -141,8 +147,22 @@ fu! s:odd_quotes(quote, s)
     return n % 2 != 0
 endfu
 
+fu! s:get_vblock_vertices()
+    return [line("'<"), col("'<"), line("'>"), col("'>")]
+endfu
 
-" COMMANDS & MAPPINGS
+fu! s:get_vblock_size(startline, startcol, endline, endcol)
+    if a:startline == a:endline
+        return strlen(strpart(getline("'<"), a:startcol, a:endcol-a:startcol+1))
+    endif
+    let size = strlen(strpart(getline("'<"), a:startcol))
+    let size += strlen(strpart(getline("'>"), 0, a:endcol))
+    let size += winwidth(0) * abs(a:startline - a:endline)  " good enough
+    return size
+endfu
+
+
+" Commands and Mappings
 " =============================================================================
 
 command! -nargs=0 -range WildfireStart call s:Wildfire(0, 0, <line2> - <line1> + 1)
