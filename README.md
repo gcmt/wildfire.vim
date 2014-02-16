@@ -5,6 +5,8 @@ default candidates are `i'`, `i"`, `i)`, `i]`, `i}` and `ip`.
 
 Learn more about text objects with `:help text-objects`.
 
+![Live preview](_assets/preview.gif "Live preview.")
+
 ### Usage
 
 Press `<ENTER>` in normal mode to select the closest text object. Keep pressing for selecting the
