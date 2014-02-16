@@ -55,7 +55,6 @@ fu! s:Wildfire(burning, water, repeat)
     endif
 
     let winview = winsaveview()
-    let [curline, curcol] = [s:origin[1], s:origin[2]]
 
     let candidates = {}
     for delim in keys(s:delimiters)
