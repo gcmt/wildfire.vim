@@ -76,24 +76,38 @@ fu! s:SelectBiggerBlock(repeat)
 
         cal winrestview(winview)
 
-        if startline != endline || startcol != endcol
-
-            let size = s:get_visual_block_size(startline, startcol, endline, endcol)
-
-            let quote = matchstr(object, "'\\|\"")
-            if !empty(quote) && startline == endline
-                let cond1 = s:origin[2] >= startcol && s:origin[2] <= endcol
-                let cond2 = index(s:winners_history, "v".(s:objects[object]-1).object) == -1
-                let cond3 = !s:odd_quotes(quote, getline("'<")[:startcol-3])
-                let cond4 = !s:odd_quotes(quote, getline("'<")[endcol+1:])
-                if cond1 && cond2 && cond3 && cond4
-                    let candidates[size] = selection
-                endif
-            else
-                let candidates[size] = selection
-            endif
-
+        " The selection failed with the candidate text object
+        if startline == endline && startcol == endcol
+            continue
         endif
+
+        " Sometimes Vim selects text objects even if the cursor is outside the
+        " them (e.g. `it`, `i"`, etc). We don't want this.
+        let cursor_col = s:origin[2]
+        if startline == endline && (cursor_col < startcol || cursor_col > endcol)
+            continue
+        endif
+
+        let size = s:get_visual_block_size(startline, startcol, endline, endcol)
+
+        " This happens when the count is incremented but the selection remains still
+        if s:already_a_winner("v".(s:objects[object]-1).object, size)
+            continue
+        endif
+
+        " Special case
+        if object =~ "a\"\\|i\"\\|a'\\|i'" && startline == endline
+            if s:already_a_winner("v".(s:objects[object]-1).object, size-2)
+                continue
+            endif
+            let quote = strpart(object, 1)
+            let [before, after] = [getline("'<")[:startcol-3], getline("'<")[endcol+1:]]
+            if s:odd_quotes(quote, before) || s:odd_quotes(quote, after)
+                continue
+            endif
+        endif
+
+        let candidates[size] = selection
 
     endfor
 
@@ -106,9 +120,9 @@ endfu
 fu! s:SelectSmallerBlock()
     cal setpos(".", s:origin)
     if len(s:winners_history) > 1
-        let last_winner = remove(s:winners_history, -1)
+        let last_winner = remove(s:winners_history, -1)[0]
         let s:objects[matchstr(last_winner, "\\D\\+$")] -= 1
-        exe "sil! norm! \<ESC>" . get(s:winners_history, -1)
+        exe "sil! norm! \<ESC>" . get(s:winners_history, -1)[0]
     endif
 endfu
 
@@ -117,12 +131,12 @@ fu! s:SelectBestBlock(candidates)
         let minsize = min(keys(a:candidates))
         let winner = a:candidates[minsize]
         let [startcol, endcol] = [a:candidates[minsize], a:candidates[minsize]]
-        let s:winners_history = add(s:winners_history, winner)
+        let s:winners_history = add(s:winners_history, [winner, minsize])
         let s:objects[matchstr(winner, "\\D\\+$")] += 1
         exe "sil! norm! \<ESC>" . winner
     elseif len(s:winners_history)
         " get stuck on the last selection
-        exe "sil! norm! \<ESC>" . get(s:winners_history, -1)
+        exe "sil! norm! \<ESC>" . get(s:winners_history, -1)[0]
     else
         " do nothing
         exe "sil! norm! \<ESC>"
@@ -132,6 +146,15 @@ endfu
 
 " Helpers
 " =============================================================================
+
+fu! s:already_a_winner(selection, size)
+    for [selection, size] in s:winners_history
+        if selection == a:selection && size == a:size
+            return 1
+        endif
+    endfor
+    return 0
+endfu
 
 fu! s:odd_quotes(quote, s)
     let n = 0
