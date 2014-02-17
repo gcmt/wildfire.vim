@@ -163,4 +163,4 @@ endfu
 
 exec "nnoremap <silent> " . g:wildfire_fuel_map . " :<C-U>call <SID>Start(v:count1)<CR>"
 exec "vnoremap <silent> " . g:wildfire_fuel_map . " :<C-U>call <SID>Fuel(v:count1)<CR>"
-exec "vnoremap <silent> " . g:wildfire_water_map . " :call <SID>Water()<CR>"
+exec "vnoremap <silent> " . g:wildfire_water_map . " :<C-U>call <SID>Water()<CR>"
