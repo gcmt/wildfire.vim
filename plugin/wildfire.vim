@@ -50,7 +50,7 @@ fu! s:Start(repeat)
 endfu
 
 fu! s:Fuel(repeat)
-   cal s:SelectBiggerBlock(a:repeat)
+    cal s:SelectBiggerBlock(a:repeat)
 endfu
 
 fu! s:Water()
