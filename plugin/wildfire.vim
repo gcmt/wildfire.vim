@@ -61,13 +61,13 @@ fu! s:Wildfire(burning, water, repeat)
 
         let selection = "v" . s:objects[object] . object
         exe "sil! norm! \<ESC>v\<ESC>" . selection . "\<ESC>"
-        let [startline, startcol, endline, endcol] = s:get_vblock_vertices()
+        let [startline, startcol, endline, endcol] = s:get_visual_block_edges()
 
         cal winrestview(winview)
 
         if startline != endline || startcol != endcol
 
-            let size = s:get_vblock_size(startline, startcol, endline, endcol)
+            let size = s:get_visual_block_size(startline, startcol, endline, endcol)
 
             if (object =~ "'" || object =~ "\"") && startline == endline
                 let [before, after] = [getline("'<")[:startcol-3],  getline("'<")[endcol+1:]]
@@ -137,11 +137,11 @@ fu! s:odd_quotes(quote, s)
     return n % 2 != 0
 endfu
 
-fu! s:get_vblock_vertices()
+fu! s:get_visual_block_edges()
     return [line("'<"), col("'<"), line("'>"), col("'>")]
 endfu
 
-fu! s:get_vblock_size(startline, startcol, endline, endcol)
+fu! s:get_visual_block_size(startline, startcol, endline, endcol)
     if a:startline == a:endline
         return strlen(strpart(getline("'<"), a:startcol, a:endcol-a:startcol+1))
     endif
