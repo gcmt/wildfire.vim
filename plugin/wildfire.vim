@@ -69,12 +69,12 @@ fu! s:Wildfire(burning, water, repeat)
 
             let size = s:get_visual_block_size(startline, startcol, endline, endcol)
 
-            if (object =~ "'" || object =~ "\"") && startline == endline
-                let line = getline("'<")
-                let quote = matchstr(object, "'\\|\"")
+            let quote = matchstr(object, "'\\|\"")
+            if !empty(quote) && startline == endline
                 let cond1 = index(s:winners_history, "v".(s:objects[object]-1).object) == -1
-                let cond2 = !s:odd_quotes(quote, line[:startcol-3]) && !s:odd_quotes(quote, line[endcol+1:])
-                if cond1 && cond2
+                let cond2 = !s:odd_quotes(quote, getline("'<")[:startcol-3])
+                let cond3 = !s:odd_quotes(quote, getline("'<")[endcol+1:])
+                if cond1 && cond2 && cond3
                     let candidates[size] = selection
                 endif
             else
@@ -95,7 +95,6 @@ endfu
 " Helpers
 " =============================================================================
 
-" to initialize state variables
 fu! s:init()
     let s:origin = getpos(".")
     let s:winners_history = []
@@ -107,7 +106,7 @@ endfu
 fu! s:select_smaller_block()
     if len(s:winners_history) > 1
         let last_winner = remove(s:winners_history, -1)
-        let s:objects[strpart(last_winner, len(last_winner)-2)] -= 1
+        let s:objects[matchstr(last_winner, "\\D\\+$")] -= 1
         exe "norm! \<ESC>" . get(s:winners_history, -1)
     endif
 endfu
@@ -118,12 +117,13 @@ fu! s:select_bigger_block(candidates)
         let winner = a:candidates[minsize]
         let [startcol, endcol] = [a:candidates[minsize], a:candidates[minsize]]
         let s:winners_history = add(s:winners_history, winner)
-        let s:objects[strpart(winner, len(winner)-2)] += 1
+        let s:objects[matchstr(winner, "\\D\\+$")] += 1
         exe "norm! \<ESC>" . winner
     elseif len(s:winners_history)
         " get stuck on the last selection
         exe "norm! \<ESC>" . get(s:winners_history, -1)
     else
+        " do nothing
         exe "norm! \<ESC>"
     endif
 endfu
