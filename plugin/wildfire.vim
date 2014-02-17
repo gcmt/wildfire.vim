@@ -187,3 +187,17 @@ endfu
 exec "nnoremap <silent> " . g:wildfire_fuel_map . " :<C-U>call <SID>Start(v:count1)<CR>"
 exec "vnoremap <silent> " . g:wildfire_fuel_map . " :<C-U>call <SID>Fuel(v:count1)<CR>"
 exec "vnoremap <silent> " . g:wildfire_water_map . " :<C-U>call <SID>Water()<CR>"
+
+
+" Autocommands
+" =============================================================================
+
+augroup wildfire
+    au!
+
+    " Disable Wildfire inside help or quickfix buffers
+    au BufReadPost * if !empty(&bt) |
+        \ sil! exec "nnoremap <buffer> " . g:wildfire_fuel_map . " " . g:wildfire_fuel_map |
+        \ endif
+
+augroup END
