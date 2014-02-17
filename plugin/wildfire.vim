@@ -108,7 +108,7 @@ fu! s:SelectSmallerBlock()
     if len(s:winners_history) > 1
         let last_winner = remove(s:winners_history, -1)
         let s:objects[matchstr(last_winner, "\\D\\+$")] -= 1
-        exe "norm! \<ESC>" . get(s:winners_history, -1)
+        exe "sil! norm! \<ESC>" . get(s:winners_history, -1)
     endif
 endfu
 
@@ -119,13 +119,13 @@ fu! s:SelectBestBlock(candidates)
         let [startcol, endcol] = [a:candidates[minsize], a:candidates[minsize]]
         let s:winners_history = add(s:winners_history, winner)
         let s:objects[matchstr(winner, "\\D\\+$")] += 1
-        exe "norm! \<ESC>" . winner
+        exe "sil! norm! \<ESC>" . winner
     elseif len(s:winners_history)
         " get stuck on the last selection
-        exe "norm! \<ESC>" . get(s:winners_history, -1)
+        exe "sil! norm! \<ESC>" . get(s:winners_history, -1)
     else
         " do nothing
-        exe "norm! \<ESC>"
+        exe "sil! norm! \<ESC>"
     endif
 endfu
 
