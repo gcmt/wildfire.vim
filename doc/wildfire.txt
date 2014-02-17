@@ -1,0 +1,89 @@
+*wildfire.txt* *wildfire.vim* *wildfire*
+
+
+                                  Wildfire
+
+                                     ~
+
+                              Reference Manual
+
+
+==============================================================================
+CONTENTS                                                   *wildfire-contents*
+
+        1. Intro ................................. |wildfire-intro|
+        2. Usage ................................. |wildfire-usage|
+        3. About ................................. |wildfire-about|
+        4. License ............................... |wildfire-license|
+
+
+==============================================================================
+1. Intro                                                      *wildfire-intro*
+
+With Wildfire you can quickly select the closest text object among a group of
+candidates. By default candidates are `i'`, `i"`, `i)`, `i]`, `i}`, `ip` and `it`.
+
+Learn more about text objects with `:help text-objects`.
+
+
+==============================================================================
+2. Usage                                                      *wildfire-usage*
+
+Press `<ENTER>` in normal mode to select the closest text object. Keep pressing
+`<ENTER>` for selecting the **next** closest text object. To go the other way
+round, that is, to select the **previously** selected text object, press `<BS>`.
+
+To speed things up, if you want to select the `n`th closest text object you can
+press a number followed by `<ENTER>` (e.g. pressing `2<ENTER>` will select the
+second closest text
+object).
+
+To change default mappings use the following options:
+
+>
+    " This selects the next closest text object.
+    let g:wildfire_fuel_map = "<ENTER>"
+<
+>
+    " This selects the previous closest text object.
+    let g:wildfire_water_map = "<BS>"
+<
+
+By default, Wildfire selects any of the text objects `i'`, `i"`, `i)`, `i]`,
+`i}`, `ip` and `it`. You can decide the ones to consider with the following
+option:
+>
+    let g:wildfire_objects = ["i'", 'i"', "i)", "i]", "i}", "ip", "it"]
+<
+
+
+==============================================================================
+3. About                                                      *wildfire-about*
+
+Author: Giacomo Comitti
+Contributors: https://github.com/gcmt/wildfire.vim/contributors
+Git repository: https://github.com/gcmt/wildfire.vim
+
+
+==============================================================================
+7. License                                                  *wildfire-license*
+
+Copyright (c) 2014 Giacomo Comitti
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
