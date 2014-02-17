@@ -71,9 +71,9 @@ fu! s:Wildfire(burning, water, repeat)
 
             let quote = matchstr(object, "'\\|\"")
             if !empty(quote) && startline == endline
-                let cond1 = index(s:winners_history, "v".(s:objects[object]-1).object) == -1
-                let cond2 = !s:odd_quotes(quote, getline("'<")[:startcol-3])
-                let cond3 = !s:odd_quotes(quote, getline("'<")[endcol+1:])
+                let cond1 = s:origin[2] >= startcol && s:origin[2] <= endcol
+                let cond2 = index(s:winners_history, "v".(s:objects[object]-1).object) == -1
+                let cond3 = !s:odd_quotes(quote, getline("'<")[:startcol-3]) && !s:odd_quotes(quote, getline("'<")[endcol+1:])
                 if cond1 && cond2 && cond3
                     let candidates[size] = selection
                 endif
