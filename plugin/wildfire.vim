@@ -44,16 +44,16 @@ fu! s:Init()
     endfor
 endfu
 
-fu! s:Start() range
+fu! s:Start(repeat)
     cal s:Init()
-    cal s:SelectBiggerBlock(a:lastline - a:firstline + 1)
+    cal s:SelectBiggerBlock(a:repeat)
 endfu
 
-fu! s:Fuel() range
-   cal s:SelectBiggerBlock(a:lastline - a:firstline + 1)
+fu! s:Fuel(repeat)
+   cal s:SelectBiggerBlock(a:repeat)
 endfu
 
-fu! s:Water() range
+fu! s:Water()
     cal s:SelectSmallerBlock()
 endfu
 
@@ -161,6 +161,6 @@ endfu
 " Commands and Mappings
 " =============================================================================
 
-exec "nnoremap <silent> " . g:wildfire_fuel_map . " :call <SID>Start()<CR>"
-exec "vnoremap <silent> " . g:wildfire_fuel_map . " :call <SID>Fuel()<CR>"
+exec "nnoremap <silent> " . g:wildfire_fuel_map . " :<C-U>call <SID>Start(v:count1)<CR>"
+exec "vnoremap <silent> " . g:wildfire_fuel_map . " :<C-U>call <SID>Fuel(v:count1)<CR>"
 exec "vnoremap <silent> " . g:wildfire_water_map . " :call <SID>Water()<CR>"
