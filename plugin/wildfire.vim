@@ -71,7 +71,7 @@ fu! s:Wildfire(burning, water, repeat)
 
             if (object =~ "'" || object =~ "\"") && startline == endline
                 let [before, after] = [getline("'<")[:startcol-3],  getline("'<")[endcol+1:]]
-                let cond1 = !s:already_a_winner("v".(s:objects[object]-1).object)
+                let cond1 = index(s:winners_history, "v".(s:objects[object]-1).object) == -1
                 let cond2 = !s:odd_quotes(object, before) && !s:odd_quotes(object, after)
                 if cond1 && cond2
                     let candidates[size] = selection
@@ -125,15 +125,6 @@ fu! s:select_bigger_block(candidates)
     else
         exe "norm! \<ESC>"
     endif
-endfu
-
-fu! s:already_a_winner(selection)
-    for winner in s:winners_history
-        if winner == a:selection
-            return 1
-        endif
-    endfor
-    return 0
 endfu
 
 fu! s:odd_quotes(quote, s)
