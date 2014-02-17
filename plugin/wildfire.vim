@@ -36,23 +36,34 @@ let s:objects = {}
 let s:winners_history = []
 let s:origin = []
 
+fu! s:Init()
+    let s:origin = getpos(".")
+    let s:winners_history = []
+    for object in g:wildfire_objects
+        let s:objects[object] = 1
+    endfor
+endfu
 
-fu! s:Wildfire(burning, water, repeat)
+fu! s:Start() range
+    cal s:Init()
+    cal s:SelectBiggerBlock(a:lastline - a:firstline + 1)
+endfu
+
+fu! s:Fuel() range
+   cal s:SelectBiggerBlock(a:lastline - a:firstline + 1)
+endfu
+
+fu! s:Water() range
+    cal s:SelectSmallerBlock()
+endfu
+
+fu! s:SelectBiggerBlock(repeat)
 
     if !a:repeat
         return
     endif
 
-    if !a:burning || empty(s:origin)
-        cal s:init()
-    endif
-
     cal setpos(".", s:origin)
-
-    if a:water
-        cal s:select_smaller_block()
-        return
-    endif
 
     let winview = winsaveview()
 
@@ -73,8 +84,9 @@ fu! s:Wildfire(burning, water, repeat)
             if !empty(quote) && startline == endline
                 let cond1 = s:origin[2] >= startcol && s:origin[2] <= endcol
                 let cond2 = index(s:winners_history, "v".(s:objects[object]-1).object) == -1
-                let cond3 = !s:odd_quotes(quote, getline("'<")[:startcol-3]) && !s:odd_quotes(quote, getline("'<")[endcol+1:])
-                if cond1 && cond2 && cond3
+                let cond3 = !s:odd_quotes(quote, getline("'<")[:startcol-3])
+                let cond4 = !s:odd_quotes(quote, getline("'<")[endcol+1:])
+                if cond1 && cond2 && cond3 && cond4
                     let candidates[size] = selection
                 endif
             else
@@ -85,25 +97,14 @@ fu! s:Wildfire(burning, water, repeat)
 
     endfor
 
-    cal s:select_bigger_block(candidates)
+    cal s:SelectBestBlock(candidates)
 
-    cal s:Wildfire(1, 0, a:repeat-1)
+    cal s:SelectBiggerBlock(a:repeat-1)
 
 endfu
 
-
-" Helpers
-" =============================================================================
-
-fu! s:init()
-    let s:origin = getpos(".")
-    let s:winners_history = []
-    for object in g:wildfire_objects
-        let s:objects[object] = 1
-    endfor
-endfu
-
-fu! s:select_smaller_block()
+fu! s:SelectSmallerBlock()
+    cal setpos(".", s:origin)
     if len(s:winners_history) > 1
         let last_winner = remove(s:winners_history, -1)
         let s:objects[matchstr(last_winner, "\\D\\+$")] -= 1
@@ -111,7 +112,7 @@ fu! s:select_smaller_block()
     endif
 endfu
 
-fu! s:select_bigger_block(candidates)
+fu! s:SelectBestBlock(candidates)
     if len(a:candidates)
         let minsize = min(keys(a:candidates))
         let winner = a:candidates[minsize]
@@ -127,6 +128,10 @@ fu! s:select_bigger_block(candidates)
         exe "norm! \<ESC>"
     endif
 endfu
+
+
+" Helpers
+" =============================================================================
 
 fu! s:odd_quotes(quote, s)
     let n = 0
@@ -156,10 +161,6 @@ endfu
 " Commands and Mappings
 " =============================================================================
 
-command! -nargs=0 -range WildfireStart call s:Wildfire(0, 0, <line2> - <line1> + 1)
-command! -nargs=0 -range WildfireFuel call s:Wildfire(1, 0, 1)
-command! -nargs=0 -range WildfireWater call s:Wildfire(1, 1, 1)
-
-exec "nnoremap <silent> " . g:wildfire_fuel_map . " :WildfireStart<CR>"
-exec "vnoremap <silent> " . g:wildfire_fuel_map . " :WildfireFuel<CR>"
-exec "vnoremap <silent> " . g:wildfire_water_map . " :WildfireWater<CR>"
+exec "nnoremap <silent> " . g:wildfire_fuel_map . " :call <SID>Start()<CR>"
+exec "vnoremap <silent> " . g:wildfire_fuel_map . " :call <SID>Fuel()<CR>"
+exec "vnoremap <silent> " . g:wildfire_water_map . " :call <SID>Water()<CR>"
