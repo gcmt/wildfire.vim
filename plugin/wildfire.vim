@@ -20,7 +20,7 @@ let g:loaded_wildfire = 1
 " =============================================================================
 
 let g:wildfire_objects =
-    \ get(g:, "wildfire_objects", ["ip", "i)", "i]", "i}", "i'", 'i"'])
+    \ get(g:, "wildfire_objects", ["ip", "i)", "i]", "i}", "i'", 'i"', "it"])
 
 let g:wildfire_fuel_map =
     \ get(g:, "wildfire_fuel_map", "<ENTER>")
