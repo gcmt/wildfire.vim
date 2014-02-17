@@ -70,9 +70,10 @@ fu! s:Wildfire(burning, water, repeat)
             let size = s:get_visual_block_size(startline, startcol, endline, endcol)
 
             if (object =~ "'" || object =~ "\"") && startline == endline
-                let [before, after] = [getline("'<")[:startcol-3],  getline("'<")[endcol+1:]]
+                let line = getline("'<")
+                let quote = matchstr(object, "'\\|\"")
                 let cond1 = index(s:winners_history, "v".(s:objects[object]-1).object) == -1
-                let cond2 = !s:odd_quotes(object, before) && !s:odd_quotes(object, after)
+                let cond2 = !s:odd_quotes(quote, line[:startcol-3]) && !s:odd_quotes(quote, line[endcol+1:])
                 if cond1 && cond2
                     let candidates[size] = selection
                 endif
