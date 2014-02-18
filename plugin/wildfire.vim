@@ -194,9 +194,17 @@ endfu
 " Commands and Mappings
 " =============================================================================
 
-exec "nnoremap <silent> " . g:wildfire_fuel_map . " :<C-U>call <SID>Start(v:count1)<CR>"
-exec "vnoremap <silent> " . g:wildfire_fuel_map . " :<C-U>call <SID>Fuel(v:count1)<CR>"
-exec "vnoremap <silent> " . g:wildfire_water_map . " :<C-U>call <SID>Water()<CR>"
+fu! s:safenet(count)
+    if a:count > &maxfuncdepth-2
+        echohl WarningMsg | echom "[wildfire] Cannot select that much." | echohl None
+        return &maxfuncdepth-2
+    endif
+    return a:count
+endfu
+
+exe "nnoremap <silent> " . g:wildfire_fuel_map . " :<C-U>call <SID>Start(<SID>safenet(v:count1))<CR>"
+exe "vnoremap <silent> " . g:wildfire_fuel_map . " :<C-U>call <SID>Fuel(<SID>safenet(v:count1))<CR>"
+exe "vnoremap <silent> " . g:wildfire_water_map . " :<C-U>call <SID>Water()<CR>"
 
 
 " Autocommands
