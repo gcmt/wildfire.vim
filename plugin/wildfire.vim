@@ -206,7 +206,7 @@ endfu
 fu! s:safenet(count)
     if a:count > &maxfuncdepth-2
         echohl WarningMsg | echom "[wildfire] Cannot select that much." | echohl None
-        return &maxfuncdepth-2
+        return 0
     endif
     return a:count
 endfu
