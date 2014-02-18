@@ -57,6 +57,7 @@ let s:origin = []
 fu! s:Init()
     let s:origin = getpos(".")
     let s:winners_history = []
+    let s:objects = {}
     for object in get(g:wildfire_objects, &ft, get(g:wildfire_objects, "*", []))
         let s:objects[object] = 1
     endfor
