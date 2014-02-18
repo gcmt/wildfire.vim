@@ -223,7 +223,7 @@ augroup wildfire
     au!
 
     " Disable Wildfire inside help or quickfix buffers
-    au BufReadPost * if !empty(&bt) |
+    au BufReadPost,CmdWinEnter * if !empty(&bt) |
         \ sil! exec "nnoremap <buffer> " . g:wildfire_fuel_map . " " . g:wildfire_fuel_map |
         \ endif
 
