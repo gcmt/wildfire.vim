@@ -22,6 +22,24 @@ let g:loaded_wildfire = 1
 let g:wildfire_objects =
     \ get(g:, "wildfire_objects", ["ip", "i)", "i]", "i}", "i'", 'i"', "it"])
 
+" force `g:wildfire_objects` to be a dictionary
+if type(g:wildfire_objects) == 3  " list
+    let s:objects = g:wildfire_objects
+    unlet g:wildfire_objects
+    let g:wildfire_objects = {"*": s:objects}
+    unlet s:objects
+endif
+
+" split filetypes that share the same text objects
+let s:objects = g:wildfire_objects
+let g:wildfire_objects = {}
+for [ftypes, objects] in items(s:objects)
+    for ft in split(ftypes, ",")
+        let g:wildfire_objects[ft] = objects
+    endfor
+endfor
+unlet s:objects
+
 let g:wildfire_fuel_map =
     \ get(g:, "wildfire_fuel_map", "<ENTER>")
 
@@ -39,7 +57,7 @@ let s:origin = []
 fu! s:Init()
     let s:origin = getpos(".")
     let s:winners_history = []
-    for object in g:wildfire_objects
+    for object in get(g:wildfire_objects, &ft, get(g:wildfire_objects, "*", []))
         let s:objects[object] = 1
     endfor
 endfu
