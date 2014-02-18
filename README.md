@@ -45,8 +45,10 @@ Wildfire allows you to be selective about which text objects are considered with
 different filetypes:
 
 ```vim
+" use '*' to mean 'all filetypes'
+" html and xml share the same text objects
 let g:wildfire_objects = {
-    \ "*" : ["i'", 'i"', "i)", "i]", "i}", "ip"],  " use '*' to mean 'all filetypes'
-    \ "html,xml" : ["at"],  " html and xml share the same text objects
-}
+    \ "*" : ["i'", 'i"', "i)", "i]", "i}", "ip"],  
+    \ "html,xml" : ["at"],  
+\ }
 ```
