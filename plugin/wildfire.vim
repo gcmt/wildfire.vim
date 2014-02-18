@@ -64,18 +64,10 @@ endfu
 
 fu! s:Start(repeat)
     cal s:Init()
-    cal s:SelectBiggerBlock(a:repeat)
+    cal s:Fuel(a:repeat)
 endfu
 
 fu! s:Fuel(repeat)
-    cal s:SelectBiggerBlock(a:repeat)
-endfu
-
-fu! s:Water()
-    cal s:SelectSmallerBlock()
-endfu
-
-fu! s:SelectBiggerBlock(repeat)
 
     if !a:repeat
         return
@@ -129,22 +121,13 @@ fu! s:SelectBiggerBlock(repeat)
 
     endfor
 
-    cal s:SelectBestBlock(candidates)
+    cal s:SelectBestCandidate(candidates)
 
-    cal s:SelectBiggerBlock(a:repeat-1)
+    cal s:Fuel(a:repeat-1)
 
 endfu
 
-fu! s:SelectSmallerBlock()
-    cal setpos(".", s:origin)
-    if len(s:winners_history) > 1
-        let last_winner = remove(s:winners_history, -1)[0]
-        let s:objects[matchstr(last_winner, "\\D\\+$")] -= 1
-        exe "sil! norm \<ESC>" . get(s:winners_history, -1)[0]
-    endif
-endfu
-
-fu! s:SelectBestBlock(candidates)
+fu! s:SelectBestCandidate(candidates)
     if len(a:candidates)
         let minsize = min(keys(a:candidates))
         let winner = a:candidates[minsize]
@@ -158,6 +141,15 @@ fu! s:SelectBestBlock(candidates)
     else
         " do nothing
         exe "sil! norm \<ESC>"
+    endif
+endfu
+
+fu! s:Water()
+    cal setpos(".", s:origin)
+    if len(s:winners_history) > 1
+        let last_winner = remove(s:winners_history, -1)[0]
+        let s:objects[matchstr(last_winner, "\\D\\+$")] -= 1
+        exe "sil! norm \<ESC>" . get(s:winners_history, -1)[0]
     endif
 endfu
 
