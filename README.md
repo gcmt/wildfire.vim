@@ -21,9 +21,11 @@ object).
 To change default mappings use the following options:
 
 ```vim
-let g:wildfire_fuel_map = "<ENTER>"  " This selects the next closest text object.
+" This selects the next closest text object.
+let g:wildfire_fuel_map = "<ENTER>"
 
-let g:wildfire_water_map = "<BS>"  " This selects the previous closest text object.
+" This selects the previous closest text object.
+let g:wildfire_water_map = "<BS>"
 ```
 
 By default, *Wildfire* selects any of the text objects `i'`, `i"`, `i)`, `i]`,
@@ -32,4 +34,19 @@ option:
 
 ```vim
 let g:wildfire_objects = ["i'", 'i"', "i)", "i]", "i}", "ip", "it"]
+```
+
+### Advanced setup
+
+Sometimes considering certain kinds of text objects can be quite annoying. This
+is the case of Html, where, for example, you may want to select just tag objects.
+
+Wildfire allows you to be selective about which text objects are considered with
+different filetypes:
+
+```vim
+let g:wildfire_objects = {
+    \ "*" : ["i'", 'i"', "i)", "i]", "i}", "ip"],  " use '*' to mean 'all filetypes'
+    \ "html,xml" : ["at"],  " html and xml share the same text objects
+}
 ```
