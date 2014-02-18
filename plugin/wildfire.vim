@@ -114,6 +114,14 @@ fu! s:Fuel(repeat)
         " Special case
         if object =~ "a\"\\|i\"\\|a'\\|i'" && startline == endline
             if s:already_a_winner("v".(s:objects[object]-1).object, size-2)
+                " When there is no more string to select on the same line, vim
+                " selects the outer string text object. This is far from the
+                " desired behavior
+                continue
+            endif
+            if s:already_a_winner("v".(s:objects[object]-1).object, size-1)
+                " This follows the previous check. When the string ends the
+                " line, the size of the text object is just one character less
                 continue
             endif
             let quote = strpart(object, 1)
