@@ -7,10 +7,13 @@
 " =============================================================================
 
 
+let s:save_cpo = &cpo
+set cpo&vim
+
 " Init
 " =============================================================================
 
-if exists("g:loaded_wildfire") || &cp
+if exists("g:loaded_wildfire")
     finish
 endif
 let g:loaded_wildfire = 1
@@ -220,3 +223,7 @@ augroup wildfire
         \ endif
 
 augroup END
+
+
+let &cpo = s:save_cpo
+unlet s:save_cpo
