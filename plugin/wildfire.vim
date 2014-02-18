@@ -85,7 +85,9 @@ fu! s:Fuel(repeat)
     for object in keys(s:objects)
 
         let selection = "v" . s:objects[object] . object
-        exe "sil! norm \<ESC>v\<ESC>" . selection . "\<ESC>"
+        exe "sil! norm! \<ESC>v\<ESC>"
+        exe "sil! norm " . selection
+        exe "sil! norm! \<ESC>"
         let [startline, startcol, endline, endcol] = s:get_visual_block_edges()
 
         cal winrestview(winview)
@@ -138,13 +140,15 @@ fu! s:SelectBestCandidate(candidates)
         let [startcol, endcol] = [a:candidates[minsize], a:candidates[minsize]]
         let s:winners_history = add(s:winners_history, [winner, minsize])
         let s:objects[matchstr(winner, "\\D\\+$")] += 1
-        exe "sil! norm \<ESC>" . winner
+        exe "sil! norm! \<ESC>"
+        exe "sil! norm " . winner
     elseif len(s:winners_history)
         " get stuck on the last selection
-        exe "sil! norm \<ESC>" . get(s:winners_history, -1)[0]
+        exe "sil! norm! \<ESC>"
+        exe "sil! norm " . get(s:winners_history, -1)[0]
     else
         " do nothing
-        exe "sil! norm \<ESC>"
+        exe "sil! norm! \<ESC>"
     endif
 endfu
 
@@ -153,7 +157,8 @@ fu! s:Water()
     if len(s:winners_history) > 1
         let last_winner = remove(s:winners_history, -1)[0]
         let s:objects[matchstr(last_winner, "\\D\\+$")] -= 1
-        exe "sil! norm \<ESC>" . get(s:winners_history, -1)[0]
+        exe "sil! norm! \<ESC>"
+        exe "sil! norm " . get(s:winners_history, -1)[0]
     endif
 endfu
 
