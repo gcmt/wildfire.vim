@@ -7,9 +7,6 @@
 " =============================================================================
 
 
-let s:save_cpo = &cpo
-set cpo&vim
-
 " Init
 " =============================================================================
 
@@ -17,6 +14,9 @@ if exists("g:loaded_wildfire")
     finish
 endif
 let g:loaded_wildfire = 1
+
+let s:save_cpo = &cpo
+set cpo&vim
 
 
 " Settings
