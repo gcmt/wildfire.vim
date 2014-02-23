@@ -15,6 +15,12 @@ if exists("g:loaded_wildfire")
 endif
 let g:loaded_wildfire = 1
 
+let s:pathsep = has("win32") ? "\\" : "/"
+let s:logfile = expand("<sfile>:p:h") . s:pathsep . "wildfire.log"
+if get(g:, "wildfire_debug", 0)
+    cal writefile([], s:logfile)
+endif
+
 let s:save_cpo = &cpo
 set cpo&vim
 
@@ -104,6 +110,9 @@ fu! s:Fuel(repeat)
 
     let winview = winsaveview()
 
+    cal s:log(repeat("=", 100))
+    cal s:log("selections history: " . string(s:selections_history))
+
     let candidates = {}
     for object in keys(s:counts)
 
@@ -113,10 +122,13 @@ fu! s:Fuel(repeat)
         let to = extend(to, {"startline": startline, "startcol": startcol,
             \ "endline": endline, "endcol": endcol })
 
+        cal s:log("considering candidation for: " . string(to))
+
         cal winrestview(winview)
 
         " The selection failed with the candidate text object
         if startline == endline && startcol == endcol
+            cal s:log(" ` failed: no selection can be performed")
             continue
         endif
 
@@ -124,6 +136,7 @@ fu! s:Fuel(repeat)
         " them (e.g. `it`, `i"`, etc). We don't want this.
         let cursor_col = s:origin[2]
         if startline == endline && (cursor_col < startcol || cursor_col > endcol)
+            cal s:log(" ` failed: does not enclose the cursor")
             let s:counts[object] += 1
             continue
         endif
@@ -133,6 +146,7 @@ fu! s:Fuel(repeat)
         " This happens when the _count is incremented but the selection remains still
         let _to = extend(copy(to), {"count": to.count-1})
         if s:AlreadySelected(_to)
+            cal s:log(" ` failed: already selected")
             continue
         endif
 
@@ -158,10 +172,12 @@ fu! s:Fuel(repeat)
             endif
         endif
 
+        cal s:log(" ` success: text object size is " . size)
         let candidates[size] = to
 
     endfor
 
+    cal s:log("candidates: " . string(candidates))
     cal s:SelectBestCandidate(candidates)
 
     cal s:Fuel(a:repeat-1)
@@ -172,6 +188,7 @@ endfu
 fu! s:SelectBestCandidate(candidates)
     if len(a:candidates)
         let to = a:candidates[min(keys(a:candidates))]
+        cal s:log("winner: " . string(to))
         let s:selections_history = add(s:selections_history, to)
         let s:counts[to.object] += 1
         cal s:Select(to)
@@ -232,6 +249,14 @@ fu! s:odd_quotes(quote, s)
     return n % 2 != 0
 endfu
 
+" Debug helpers
+" =============================================================================
+
+fu! s:log(msg)
+    if get(g:, "wildfire_debug", 0)
+        cal writefile(readfile(s:logfile) + split(a:msg, "\n"), s:logfile)
+    endif
+endfu
 
 " Commands and Mappings
 " =============================================================================
