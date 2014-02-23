@@ -53,22 +53,31 @@ let g:wildfire_water_map =
 " Functions
 " =============================================================================
 
-let s:objects = {}
-let s:winners_history = []
+let s:counts = {}
+let s:selections_history = []
 let s:origin = []
 
 fu! s:Init()
     let s:origin = getpos(".")
-    let s:winners_history = []
-    let s:objects = {}
+    let s:selections_history = []
+    let s:counts = {}
     for object in get(g:wildfire_objects, &ft, get(g:wildfire_objects, "*", []))
-        let s:objects[object] = 1
+        let s:counts[object] = 1
     endfor
 endfu
 
 fu! s:Start(repeat)
     cal s:Init()
     cal s:Fuel(a:repeat)
+endfu
+
+fu! s:Water()
+    cal setpos(".", s:origin)
+    if len(s:selections_history) > 1
+        let object = remove(s:selections_history, -1).object
+        let s:counts[object] -= 1
+        cal s:Select(get(s:selections_history, -1))
+    endif
 endfu
 
 fu! s:Fuel(repeat)
@@ -82,13 +91,13 @@ fu! s:Fuel(repeat)
     let winview = winsaveview()
 
     let candidates = {}
-    for object in keys(s:objects)
+    for object in keys(s:counts)
 
-        let selection = "v" . s:objects[object] . object
-        exe "sil! norm! \<ESC>v\<ESC>"
-        exe "sil! norm " . selection
-        exe "sil! norm! \<ESC>"
-        let [startline, startcol, endline, endcol] = s:get_visual_block_edges()
+        let to = {"object": object, "count": s:counts[object]}
+
+        let [startline, startcol, endline, endcol] = s:Edges(to)
+        let to = extend(to, {"startline": startline, "startcol": startcol,
+            \ "endline": endline, "endcol": endcol })
 
         cal winrestview(winview)
 
@@ -101,25 +110,29 @@ fu! s:Fuel(repeat)
         " them (e.g. `it`, `i"`, etc). We don't want this.
         let cursor_col = s:origin[2]
         if startline == endline && (cursor_col < startcol || cursor_col > endcol)
+            let s:counts[object] += 1
             continue
         endif
 
-        let size = s:get_visual_block_size(startline, startcol, endline, endcol)
+        let size = s:Size(startline, startcol, endline, endcol)
 
-        " This happens when the count is incremented but the selection remains still
-        if s:already_a_winner("v".(s:objects[object]-1).object, size)
+        " This happens when the _count is incremented but the selection remains still
+        let _to = extend(copy(to), {"count": to.count-1})
+        if s:AlreadySelected(_to)
             continue
         endif
 
         " Special case
         if object =~ "a\"\\|i\"\\|a'\\|i'" && startline == endline
-            if s:already_a_winner("v".(s:objects[object]-1).object, size-2)
+            let _to = extend(copy(to), {"count": to.count-1, "startcol": to.startcol+1, "endcol": to.endcol-1})
+            if s:AlreadySelected(_to)
                 " When there is no more string to select on the same line, vim
                 " selects the outer string text object. This is far from the
                 " desired behavior
                 continue
             endif
-            if s:already_a_winner("v".(s:objects[object]-1).object, size-1)
+            let _to = extend(copy(to), {"count": to.count-1, "startcol": to.startcol+1})
+            if s:AlreadySelected(_to)
                 " This follows the previous check. When the string ends the
                 " line, the size of the text object is just one character less
                 continue
@@ -131,7 +144,7 @@ fu! s:Fuel(repeat)
             endif
         endif
 
-        let candidates[size] = selection
+        let candidates[size] = to
 
     endfor
 
@@ -141,48 +154,52 @@ fu! s:Fuel(repeat)
 
 endfu
 
+" To select the closest text object among the candidates
 fu! s:SelectBestCandidate(candidates)
     if len(a:candidates)
-        let minsize = min(keys(a:candidates))
-        let winner = a:candidates[minsize]
-        let [startcol, endcol] = [a:candidates[minsize], a:candidates[minsize]]
-        let s:winners_history = add(s:winners_history, [winner, minsize])
-        let s:objects[matchstr(winner, "\\D\\+$")] += 1
-        exe "sil! norm! \<ESC>"
-        exe "sil! norm " . winner
-    elseif len(s:winners_history)
+        let to = a:candidates[min(keys(a:candidates))]
+        let s:selections_history = add(s:selections_history, to)
+        let s:counts[to.object] += 1
+        cal s:Select(to)
+    elseif len(s:selections_history)
         " get stuck on the last selection
-        exe "sil! norm! \<ESC>"
-        exe "sil! norm " . get(s:winners_history, -1)[0]
+        cal s:Select(get(s:selections_history, -1))
     else
         " do nothing
-        exe "sil! norm! \<ESC>"
+        exec "sil! norm! \<ESC>"
     endif
 endfu
 
-fu! s:Water()
-    cal setpos(".", s:origin)
-    if len(s:winners_history) > 1
-        let last_winner = remove(s:winners_history, -1)[0]
-        let s:objects[matchstr(last_winner, "\\D\\+$")] -= 1
-        exe "sil! norm! \<ESC>"
-        exe "sil! norm " . get(s:winners_history, -1)[0]
+" To retrun the edges of a text object
+fu! s:Edges(to)
+    cal s:Select(a:to)
+    exe "sil! norm! \<ESC>"
+    return [line("'<"), col("'<"), line("'>"), col("'>")]
+endfu
+
+" To select a text object
+fu! s:Select(to)
+    exe "sil! norm! \<ESC>v\<ESC>"
+    exe "sil! norm v" . a:to.count . a:to.object
+endfu
+
+" To check if a text object has been already selected
+fu! s:AlreadySelected(to)
+    return index(s:selections_history, a:to) >= 0
+endfu
+
+" To return the size of a text object
+fu! s:Size(startline, startcol, endline, endcol)
+    if a:startline == a:endline
+        return strlen(strpart(getline("'<"), a:startcol, a:endcol-a:startcol+1))
     endif
+    let size = strlen(strpart(getline("'<"), a:startcol))
+    let size += strlen(strpart(getline("'>"), 0, a:endcol))
+    let size += winwidth(0) * abs(a:startline - a:endline)  " good enough
+    return size
 endfu
 
-
-" Helpers
-" =============================================================================
-
-fu! s:already_a_winner(selection, size)
-    for [selection, size] in s:winners_history
-        if selection == a:selection && size == a:size
-            return 1
-        endif
-    endfor
-    return 0
-endfu
-
+" To check if in a strings there is an odd number of quotes
 fu! s:odd_quotes(quote, s)
     let n = 0
     for i in range(0, strlen(a:s))
@@ -191,20 +208,6 @@ fu! s:odd_quotes(quote, s)
         endif
     endfor
     return n % 2 != 0
-endfu
-
-fu! s:get_visual_block_edges()
-    return [line("'<"), col("'<"), line("'>"), col("'>")]
-endfu
-
-fu! s:get_visual_block_size(startline, startcol, endline, endcol)
-    if a:startline == a:endline
-        return strlen(strpart(getline("'<"), a:startcol, a:endcol-a:startcol+1))
-    endif
-    let size = strlen(strpart(getline("'<"), a:startcol))
-    let size += strlen(strpart(getline("'>"), 0, a:endcol))
-    let size += winwidth(0) * abs(a:startline - a:endline)  " good enough
-    return size
 endfu
 
 
