@@ -179,8 +179,10 @@ endfu
 
 " To select a text object
 fu! s:Select(to)
-    exe "sil! norm! \<ESC>v\<ESC>"
-    exe "sil! norm v" . a:to.count . a:to.object
+    exe "sil! norm! \<ESC>v\<ESC>v"
+    for n in range(a:to.count)
+        exe "sil! norm " . a:to.object
+    endfor
 endfu
 
 " To check if a text object has been already selected
