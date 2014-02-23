@@ -50,12 +50,26 @@ let g:wildfire_water_map =
     \ get(g:, "wildfire_water_map", "<BS>")
 
 
-" Functions
+" Internal variables
 " =============================================================================
+
+let s:objects = [
+    \ "(", ")", "{", "}","[", "]", "<", ">", "b", "B",
+    \ "'", '"', "`", "t", "w", "W", "p", "s"]
+
+let s:vim_objects = {}
+for kind in s:objects
+    let s:vim_objects = extend(s:vim_objects, {"a".kind : 1, "i".kind : 1})
+endfor
+unlet s:objects
 
 let s:counts = {}
 let s:selections_history = []
 let s:origin = []
+
+
+" Functions
+" =============================================================================
 
 fu! s:Init()
     let s:origin = getpos(".")
@@ -180,9 +194,15 @@ endfu
 " To select a text object
 fu! s:Select(to)
     exe "sil! norm! \<ESC>v\<ESC>v"
-    for n in range(a:to.count)
-        exe "sil! norm " . a:to.object
-    endfor
+    if get(s:vim_objects, a:to.object)
+        " use counts when selecting vim text objects
+        exe "sil! norm! " . a:to.count . a:to.object
+    else
+        " counts might not be suported by non-defautl text objects
+        for n in range(a:to.count)
+            exe "sil! norm " . a:to.object
+        endfor
+    endif
 endfu
 
 " To check if a text object has been already selected
