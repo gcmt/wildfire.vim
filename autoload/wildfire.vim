@@ -43,12 +43,6 @@ for [ftypes, objects] in items(s:objects)
 endfor
 unlet s:objects
 
-let g:wildfire_fuel_map =
-    \ get(g:, "wildfire_fuel_map", "<ENTER>")
-
-let g:wildfire_water_map =
-    \ get(g:, "wildfire_water_map", "<BS>")
-
 
 " Internal variables
 " =============================================================================
