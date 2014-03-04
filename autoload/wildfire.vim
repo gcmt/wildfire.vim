@@ -6,14 +6,8 @@
 " License: MIT
 " =============================================================================
 
-
 " Init
 " =============================================================================
-
-if exists("g:loaded_wildfire")
-    finish
-endif
-let g:loaded_wildfire = 1
 
 let s:pathsep = has("win32") ? "\\" : "/"
 let s:logfile = expand("<sfile>:p:h") . s:pathsep . "wildfire.log"
@@ -86,12 +80,12 @@ fu! s:Init()
     endfor
 endfu
 
-fu! s:Start(repeat)
+fu! wildfire#start(repeat)
     cal s:Init()
-    cal s:Fuel(a:repeat)
+    cal wildfire#fuel(a:repeat)
 endfu
 
-fu! s:Water()
+fu! wildfire#water()
     cal setpos(".", s:origin)
     if len(s:selections_history) > 1
         let object = remove(s:selections_history, -1).object
@@ -100,9 +94,11 @@ fu! s:Water()
     endif
 endfu
 
-fu! s:Fuel(repeat)
+fu! wildfire#fuel(repeat)
 
-    if !a:repeat
+    let repeat = s:safenet(a:repeat)
+
+    if !repeat
         return
     endif
 
@@ -180,7 +176,7 @@ fu! s:Fuel(repeat)
     cal s:log("candidates: " . string(candidates))
     cal s:SelectBestCandidate(candidates)
 
-    cal s:Fuel(a:repeat-1)
+    cal wildfire#fuel(repeat-1)
 
 endfu
 
@@ -249,18 +245,6 @@ fu! s:odd_quotes(quote, s)
     return n % 2 != 0
 endfu
 
-" Debug helpers
-" =============================================================================
-
-fu! s:log(msg)
-    if get(g:, "wildfire_debug", 0)
-        cal writefile(readfile(s:logfile) + split(a:msg, "\n"), s:logfile)
-    endif
-endfu
-
-" Commands and Mappings
-" =============================================================================
-
 fu! s:safenet(count)
     if a:count > &maxfuncdepth-2
         echohl WarningMsg | echom "[wildfire] Cannot select that much." | echohl None
@@ -269,24 +253,14 @@ fu! s:safenet(count)
     return a:count
 endfu
 
-exe "nnoremap <silent> " . g:wildfire_fuel_map . " :<C-U>call <SID>Start(<SID>safenet(v:count1))<CR>"
-exe "vnoremap <silent> " . g:wildfire_fuel_map . " :<C-U>call <SID>Fuel(<SID>safenet(v:count1))<CR>"
-exe "vnoremap <silent> " . g:wildfire_water_map . " :<C-U>call <SID>Water()<CR>"
-
-
-" Autocommands
+" Debug helpers
 " =============================================================================
 
-augroup wildfire
-    au!
-
-    " Disable Wildfire inside help or quickfix buffers
-    au BufReadPost,CmdWinEnter * if !empty(&bt) |
-        \ sil! exec "nnoremap <buffer> " . g:wildfire_fuel_map . " " . g:wildfire_fuel_map |
-        \ endif
-
-augroup END
-
+fu! s:log(msg)
+    if get(g:, "wildfire_debug", 0)
+        cal writefile(readfile(s:logfile) + split(a:msg, "\n"), s:logfile)
+    endif
+endfu
 
 let &cpo = s:save_cpo
 unlet s:save_cpo
