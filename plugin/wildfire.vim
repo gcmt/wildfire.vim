@@ -31,10 +31,15 @@ let g:wildfire_water_map =
 " Commands and Mappings
 " =============================================================================
 
-exe "nnoremap <silent> " . g:wildfire_fuel_map . " :<C-U>call wildfire#start(v:count1)<CR>"
-exe "vnoremap <silent> " . g:wildfire_fuel_map . " :<C-U>call wildfire#fuel(v:count1)<CR>"
-exe "vnoremap <silent> " . g:wildfire_water_map . " :<C-U>call wildfire#water()<CR>"
+nnoremap <silent> <Plug>(wildfire-fuel) :<C-U>call wildfire#start(v:count1)<CR>
+vnoremap <silent> <Plug>(wildfire-fuel) :<C-U>call wildfire#fuel(v:count1)<CR>
+vnoremap <silent> <Plug>(wildfire-water) :<C-U>call wildfire#water()<CR>
 
+if !hasmapto('<Plug>(wildfire-fuel)') && !hasmapto('<Plug>(wildfire-water)')
+  exe "nnoremap " . g:wildfire_fuel_map . " <Plug>(wildfire-fuel)"
+  exe "map" g:wildfire_fuel_map "<Plug>(wildfire-fuel)"
+  exe "map" g:wildfire_water_map "<Plug>(wildfire-water)"
+endif
 
 " Autocommands
 " =============================================================================
