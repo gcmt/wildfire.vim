@@ -26,22 +26,15 @@ let g:wildfire_objects =
     \ get(g:, "wildfire_objects", ["ip", "i)", "i]", "i}", "i'", 'i"', "it"])
 
 " force `g:wildfire_objects` to be a dictionary
-if type(g:wildfire_objects) == 3  " list
-    let s:objects = g:wildfire_objects
-    unlet g:wildfire_objects
-    let g:wildfire_objects = {"*": s:objects}
-    unlet s:objects
-endif
+let s:wildfire_objects = type(g:wildfire_objects) == type([]) ?
+      \ {"*": g:wildfire_objects} : g:wildfire_objects
 
 " split filetypes that share the same text objects
-let s:objects = g:wildfire_objects
-let g:wildfire_objects = {}
-for [ftypes, objects] in items(s:objects)
+for [ftypes, objects] in items(s:wildfire_objects)
     for ft in split(ftypes, ",")
-        let g:wildfire_objects[ft] = objects
+        let s:wildfire_objects[ft] = objects
     endfor
 endfor
-unlet s:objects
 
 
 " Internal variables
@@ -69,7 +62,8 @@ fu! s:Init()
     let s:origin = getpos(".")
     let s:selections_history = []
     let s:counts = {}
-    for object in get(g:wildfire_objects, &ft, get(g:wildfire_objects, "*", []))
+    for object in get(s:wildfire_objects, &ft,
+          \ get(s:wildfire_objects, "*", []))
         let s:counts[object] = 1
     endfor
 endfu
