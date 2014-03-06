@@ -54,8 +54,7 @@ fu! s:Init()
     let s:origin = getpos(".")
     let s:selections_history = []
     let s:counts = {}
-    for object in get(s:wildfire_objects, &ft,
-          \ get(s:wildfire_objects, "*", []))
+    for object in get(s:wildfire_objects, &ft, get(s:wildfire_objects, "*", []))
         let s:counts[object] = 1
     endfor
 endfu
