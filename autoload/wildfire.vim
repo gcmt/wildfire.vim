@@ -95,19 +95,19 @@ fu! wildfire#fuel(repeat)
         cal winrestview(winview)
 
         " The selection failed with the candidate text object
-        if startline == endline && startcol == endcol
+        if to.startline == to.endline && to.startcol == to.endcol
             continue
         endif
 
         " Sometimes Vim selects text objects even if the cursor is outside the
         " them (e.g. `it`, `i"`, etc). We don't want this.
         let cursor_col = s:origin[2]
-        if startline == endline && (cursor_col < startcol || cursor_col > endcol)
+        if to.startline == to.endline && (cursor_col < to.startcol || cursor_col > to.endcol)
             let s:counts[object] += 1
             continue
         endif
 
-        let size = s:Size(startline, startcol, endline, endcol)
+        let size = s:Size(to)
 
         " This happens when the _count is incremented but the selection remains still
         let _to = extend(copy(to), {"count": to.count-1})
@@ -131,8 +131,8 @@ fu! wildfire#fuel(repeat)
                 continue
             endif
             let quote = strpart(object, 1)
-            let [before, after] = [getline("'<")[:startcol-3], getline("'<")[endcol+1:]]
-            if s:odd_quotes(quote, before) || s:odd_quotes(quote, after)
+            let [before, after] = [getline("'<")[:to.startcol-3], getline("'<")[to.endcol+1:]]
+            if s:OddQuotes(quote, before) || s:OddQuotes(quote, after)
                 continue
             endif
         endif
@@ -190,18 +190,18 @@ fu! s:AlreadySelected(to)
 endfu
 
 " To return the size of a text object
-fu! s:Size(startline, startcol, endline, endcol)
-    if a:startline == a:endline
-        return strlen(strpart(getline("'<"), a:startcol, a:endcol-a:startcol+1))
+fu! s:Size(to)
+    if a:to.startline == a:to.endline
+        return strlen(strpart(getline("'<"), a:to.startcol, a:to.endcol-a:to.startcol+1))
     endif
-    let size = strlen(strpart(getline("'<"), a:startcol))
-    let size += strlen(strpart(getline("'>"), 0, a:endcol))
-    let size += winwidth(0) * abs(a:startline - a:endline)  " good enough
+    let size = strlen(strpart(getline("'<"), a:to.startcol))
+    let size += strlen(strpart(getline("'>"), 0, a:to.endcol))
+    let size += winwidth(0) * abs(a:to.startline - a:to.endline)  " good enough
     return size
 endfu
 
 " To check if in a strings there is an odd number of quotes
-fu! s:odd_quotes(quote, s)
+fu! s:OddQuotes(quote, s)
     let n = 0
     for i in range(0, strlen(a:s))
         if a:s[i] == a:quote && !(i > 0 && a:s[i-1] == "\\")
