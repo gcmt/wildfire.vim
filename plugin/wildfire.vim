@@ -31,8 +31,16 @@ let g:wildfire_water_map =
 " Commands and Mappings
 " =============================================================================
 
-nnoremap <silent> <Plug>(wildfire-fuel) :<C-U>call wildfire#start(v:count1)<CR>
-vnoremap <silent> <Plug>(wildfire-fuel) :<C-U>call wildfire#fuel(v:count1)<CR>
+fu! s:safenet(count)
+    if a:count > &maxfuncdepth-2
+        echohl WarningMsg | echom "[wildfire] Cannot select that much." | echohl None
+        return 0
+    endif
+    return a:count
+endfu
+
+nnoremap <silent> <Plug>(wildfire-fuel) :<C-U>call wildfire#start(<SID>safenet(v:count1))<CR>
+vnoremap <silent> <Plug>(wildfire-fuel) :<C-U>call wildfire#fuel(<SID>safenet(v:count1))<CR>
 vnoremap <silent> <Plug>(wildfire-water) :<C-U>call wildfire#water()<CR>
 
 if !hasmapto('<Plug>(wildfire-fuel)') && !hasmapto('<Plug>(wildfire-water)')

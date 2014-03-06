@@ -75,9 +75,7 @@ endfu
 
 fu! wildfire#fuel(repeat)
 
-    let repeat = s:safenet(a:repeat)
-
-    if !repeat
+    if !a:repeat
         return
     endif
 
@@ -145,7 +143,7 @@ fu! wildfire#fuel(repeat)
 
     cal s:SelectBestCandidate(candidates)
 
-    cal wildfire#fuel(repeat-1)
+    cal wildfire#fuel(a:repeat-1)
 
 endfu
 
@@ -211,14 +209,6 @@ fu! s:odd_quotes(quote, s)
         endif
     endfor
     return n % 2 != 0
-endfu
-
-fu! s:safenet(count)
-    if a:count > &maxfuncdepth-2
-        echohl WarningMsg | echom "[wildfire] Cannot select that much." | echohl None
-        return 0
-    endif
-    return a:count
 endfu
 
 
