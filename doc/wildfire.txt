@@ -13,7 +13,7 @@ CONTENTS                                                   *wildfire-contents*
 
         1. Intro ................................. |wildfire-intro|
         2. Usage ................................. |wildfire-usage|
-        2. Advanced setup ........................ |wildfire-advanced-setup|
+        3. Advanced setup ........................ |wildfire-advanced-setup|
         4. About ................................. |wildfire-about|
         5. License ............................... |wildfire-license|
 
@@ -49,6 +49,19 @@ To change default mappings use the following options:
     " This selects the previous closest text object.
     let g:wildfire_water_map = "<BS>"
 <
+
+You can map keys to '<Plug>' mappings:
+>
+   map <ENTER> <Plug>(wildfire-fuel)
+   map <BS> <Plug>(wildfire-water)
+<
+
+This is useful when you want to hack key mappings. For example, call fuel/water
+via another plugins. You can point the interface of fuel/water like below:
+>
+   map <ENTER> <Plug>(wildfire-fuel)U
+<
+This key mapping make upper-case string on the cursor.
 
 By default, Wildfire selects any of the text objects `i'`, `i"`, `i)`, `i]`,
 `i}`, `ip` and `it`. You can decide the ones to consider with the following
