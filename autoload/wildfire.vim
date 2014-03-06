@@ -192,10 +192,11 @@ endfu
 " To return the size of a text object
 fu! s:Size(to)
     if a:to.startline == a:to.endline
-        return strlen(strpart(getline("'<"), a:to.startcol, a:to.endcol-a:to.startcol+1))
+        let line = getline(a:to.startline)
+        return strlen(strpart(line, a:to.startcol, a:to.endcol-a:to.startcol+1))
     endif
-    let size = strlen(strpart(getline("'<"), a:to.startcol))
-    let size += strlen(strpart(getline("'>"), 0, a:to.endcol))
+    let size = strlen(strpart(getline(a:to.startline), a:to.startcol))
+    let size += strlen(strpart(getline(a:to.endline), 0, a:to.endcol))
     let size += winwidth(0) * abs(a:to.startline - a:to.endline)  " good enough
     return size
 endfu
