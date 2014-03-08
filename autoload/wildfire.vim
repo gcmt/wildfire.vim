@@ -67,8 +67,7 @@ endfu
 fu! wildfire#water()
     cal setpos(".", s:origin)
     if len(s:selections_history) > 1
-        let object = remove(s:selections_history, -1).object
-        let s:counts[object] -= 1
+        let s:counts[remove(s:selections_history, -1).object] -= 1
         cal s:Select(get(s:selections_history, -1))
     endif
 endfu
