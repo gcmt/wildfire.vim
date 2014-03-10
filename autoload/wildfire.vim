@@ -64,7 +64,15 @@ fu! wildfire#start(repeat)
     cal wildfire#fuel(a:repeat)
 endfu
 
-fu! wildfire#water()
+fu! wildfire#water(repeat)
+  let repeat = a:repeat
+  while repeat
+    let repeat -= 1
+    cal wildfire#_water()
+  endwhile
+endfu
+
+fu! wildfire#_water()
     cal setpos(".", s:origin)
     if len(s:selections_history) > 1
         let s:counts[remove(s:selections_history, -1).object] -= 1
@@ -73,10 +81,14 @@ fu! wildfire#water()
 endfu
 
 fu! wildfire#fuel(repeat)
+  let repeat = a:repeat
+  while repeat
+    let repeat -= 1
+    cal wildfire#_fuel()
+  endwhile
+endfu
 
-    if !a:repeat
-        return
-    endif
+fu! wildfire#_fuel()
 
     cal setpos(".", s:origin)
 
@@ -141,8 +153,6 @@ fu! wildfire#fuel(repeat)
     endfor
 
     cal s:SelectBestCandidate(candidates)
-
-    cal wildfire#fuel(a:repeat-1)
 
 endfu
 
