@@ -65,11 +65,9 @@ fu! wildfire#start(repeat)
 endfu
 
 fu! wildfire#water(repeat)
-  let repeat = a:repeat
-  while repeat
-    let repeat -= 1
+  for i in range(a:repeat)
     cal wildfire#_water()
-  endwhile
+  endfor
 endfu
 
 fu! wildfire#_water()
@@ -81,11 +79,9 @@ fu! wildfire#_water()
 endfu
 
 fu! wildfire#fuel(repeat)
-  let repeat = a:repeat
-  while repeat
-    let repeat -= 1
+  for i in range(a:repeat)
     cal wildfire#_fuel()
-  endwhile
+  endfor
 endfu
 
 fu! wildfire#_fuel()
