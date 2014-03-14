@@ -7,6 +7,12 @@ Learn more about text objects with `:help text-objects`.
 
 ![Preview](_assets/preview.gif "Preview.")
 
+### Installation
+
+Install either with [Pathogen](https://github.com/tpope/vim-pathogen),
+[Vundle](https://github.com/gmarik/Vundle.vim), [NeoBundle](https://github.com/Shougo/neobundle.vim),
+or your favorite plugin manager.
+
 ### Usage
 
 Press `<ENTER>` in normal mode to select the closest text object. Keep pressing
