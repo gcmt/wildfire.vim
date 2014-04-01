@@ -82,7 +82,7 @@ different filetypes:
     let g:wildfire_objects = {
         \ "*" : ["i'", 'i"', "i)", "i]", "i}", "ip"],  " use '*' to mean 'all other filetypes'
         \ "html,xml" : ["at"],  " html and xml share the same text objects
-    }
+        \}
 <
 
 ==============================================================================
