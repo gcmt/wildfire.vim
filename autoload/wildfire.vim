@@ -34,15 +34,10 @@ endfor
 
 let s:cannot_be_nested = {"iw" : 1, "aw" : 1, "iW" : 1, "aW": 1}
 
-let s:objects = [
-    \ "(", ")", "{", "}","[", "]", "<", ">", "b", "B",
-    \ "'", '"', "`", "t", "w", "W", "p", "s"]
-
-let s:vim_objects = {}
-for kind in s:objects
-    let s:vim_objects = extend(s:vim_objects, {"a".kind : 1, "i".kind : 1})
+let s:vim_text_objects = {}
+for char in split("(){}[]<>'`\"bBwWpst", "\\zs")
+    let s:vim_text_objects = extend(s:vim_text_objects, {"a".char : 1, "i".char : 1})
 endfor
-unlet s:objects
 
 let s:counts = {}
 let s:selections_history = []
@@ -185,7 +180,7 @@ endfu
 " To select a text object
 fu! s:Select(to)
     exe "sil! norm! \<ESC>v\<ESC>v"
-    if get(s:vim_objects, a:to.object)
+    if get(s:vim_text_objects, a:to.object)
         " use counts when selecting vim text objects
         exe "sil! norm! " . a:to.count . a:to.object
     else
