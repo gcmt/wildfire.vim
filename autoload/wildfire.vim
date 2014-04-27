@@ -32,6 +32,8 @@ endfor
 " Internal variables
 " =============================================================================
 
+let s:cannot_be_nested = {"iw" : 1, "aw" : 1, "iW" : 1, "aW": 1}
+
 let s:objects = [
     \ "(", ")", "{", "}","[", "]", "<", ">", "b", "B",
     \ "'", '"', "`", "t", "w", "W", "p", "s"]
@@ -100,6 +102,11 @@ fu! wildfire#_fuel()
             \ "endline": endline, "endcol": endcol })
 
         cal winrestview(winview)
+
+        " Some text object cannot be nested. This avoids unwanted behavior.
+        if get(s:cannot_be_nested, to.object) && to.count > 1
+            continue
+        endif
 
         " The selection failed with the candidate text object
         if to.startline == to.endline && to.startcol == to.endcol
