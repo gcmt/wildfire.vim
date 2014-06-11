@@ -11,24 +11,6 @@ let s:save_cpo = &cpo
 set cpo&vim
 
 
-" Settings
-" =============================================================================
-
-let g:wildfire_objects =
-    \ get(g:, "wildfire_objects", ["ip", "i)", "i]", "i}", "i'", 'i"', "it"])
-
-" force `g:wildfire_objects` to be a dictionary
-let s:wildfire_objects = type(g:wildfire_objects) == type([]) ?
-      \ {"*": g:wildfire_objects} : g:wildfire_objects
-
-" split filetypes that share the same text objects
-for [ftypes, objects] in items(s:wildfire_objects)
-    for ft in split(ftypes, ",")
-        let s:wildfire_objects[ft] = objects
-    endfor
-endfor
-
-
 " Internal variables
 " =============================================================================
 
@@ -47,11 +29,25 @@ let s:origin = []
 " Functions
 " =============================================================================
 
+fu! s:load_objects()
+    " force `g:wildfire_objects` to be a dictionary
+    let wildfire_objects = type(g:wildfire_objects) == type([]) ?
+        \ {"*": g:wildfire_objects} : copy(g:wildfire_objects)
+    " split filetypes that share the same text objects
+    for [ftypes, objects] in items(wildfire_objects)
+        for ft in split(ftypes, ",")
+            let wildfire_objects[ft] = objects
+        endfor
+    endfor
+    return wildfire_objects
+endfu
+
 fu! s:Init()
     let s:origin = getpos(".")
     let s:selections_history = []
     let s:counts = {}
-    for object in get(s:wildfire_objects, &ft, get(s:wildfire_objects, "*", []))
+    let wildfire_objects = s:load_objects()
+    for object in get(wildfire_objects, &ft, get(wildfire_objects, "*", []))
         let s:counts[object] = 1
     endfor
 endfu
