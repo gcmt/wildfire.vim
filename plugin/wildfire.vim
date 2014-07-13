@@ -22,7 +22,7 @@ set cpo&vim
 " =============================================================================
 
 let g:wildfire_objects =
-    \ get(g:, "wildfire_objects", split("ip,i),i],i},i',i\",it", ","))
+    \ get(g:, "wildfire_objects", split("ip i) i] i} i' i\" it"))
 
 let g:wildfire_fuel_map =
     \ get(g:, "wildfire_fuel_map", "<ENTER>")
@@ -34,16 +34,16 @@ let g:wildfire_water_map =
 " Mappings
 " =============================================================================
 
-vmap <silent> <Plug>(wildfire-water) :<C-U>call wildfire#water(v:count1)<CR>
+vmap <silent> <Plug>(wildfire-water) :<C-U>call wildfire#Water(v:count1)<CR>
 
-nmap <silent> <Plug>(wildfire-fuel) :<C-U>call wildfire#start(v:count1, g:wildfire_objects)<CR>
-vmap <silent> <Plug>(wildfire-fuel) :<C-U>call wildfire#fuel(v:count1)<CR>
+nmap <silent> <Plug>(wildfire-fuel) :<C-U>call wildfire#Start(v:count1, g:wildfire_objects)<CR>
+vmap <silent> <Plug>(wildfire-fuel) :<C-U>call wildfire#Fuel(v:count1)<CR>
 
 for var in keys(g:)
     let label = matchstr(var, '\v(wildfire_objects_)@<=(.+)')
     if !empty(label)
-        exe "nmap <silent> <Plug>(wildfire-fuel:".label.") :<C-U>call wildfire#start(v:count1, g:".var.")<CR>"
-        exe "vmap <silent> <Plug>(wildfire-fuel:".label.") :<C-U>call wildfire#fuel(v:count1)<CR>"
+        exe "nmap <silent> <Plug>(wildfire-fuel:".label.") :<C-U>call wildfire#Start(v:count1, g:".var.")<CR>"
+        exe "vmap <silent> <Plug>(wildfire-fuel:".label.") :<C-U>call wildfire#Fuel(v:count1)<CR>"
     end
 endfor
 

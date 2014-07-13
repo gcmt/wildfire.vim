@@ -29,7 +29,7 @@ let s:origin = []
 " Functions
 " =============================================================================
 
-fu! s:load_objects(objects)
+fu! s:LoadObjects(objects)
     " force `g:wildfire_objects` to be a dictionary
     let _objects = type(a:objects) == type([]) ? {"*": a:objects} : a:objects
     " split filetypes that share the same text objects
@@ -41,46 +41,42 @@ fu! s:load_objects(objects)
     return _objects
 endfu
 
-fu! s:init(objects)
+fu! s:Init(objects)
     let s:origin = getpos(".")
     let s:selections_history = []
     let s:counts = {}
-    let _objects = s:load_objects(a:objects)
+    let _objects = s:LoadObjects(a:objects)
     for object in get(_objects, &ft, get(_objects, "*", []))
         let s:counts[object] = 1
     endfor
 endfu
 
-fu! wildfire#start(repeat, objects)
-    cal s:init(a:objects)
-    cal wildfire#fuel(a:repeat)
+fu! wildfire#Start(repeat, objects)
+    cal s:Init(a:objects)
+    cal wildfire#Fuel(a:repeat)
 endfu
 
-fu! wildfire#water(repeat)
-  for i in range(a:repeat)
-    cal wildfire#_water()
-  endfor
+fu! wildfire#Fuel(repeat)
+    for i in range(a:repeat)
+        cal s:SelectTextObject()
+    endfor
 endfu
 
-fu! wildfire#_water()
-    cal setpos(".", s:origin)
-    if len(s:selections_history) > 1
-        let s:counts[remove(s:selections_history, -1).object] -= 1
-        cal s:Select(get(s:selections_history, -1))
-    endif
+fu! wildfire#Water(repeat)
+    for i in range(a:repeat)
+        cal setpos(".", s:origin)
+        if len(s:selections_history) > 1
+            let s:counts[remove(s:selections_history, -1).object] -= 1
+            cal s:Select(get(s:selections_history, -1))
+        endif
+    endfor
 endfu
 
-fu! wildfire#fuel(repeat)
-  for i in range(a:repeat)
-    cal wildfire#_fuel()
-  endfor
-endfu
-
-fu! wildfire#_fuel()
+fu! s:SelectTextObject()
 
     cal setpos(".", s:origin)
 
-    let winview = winsaveview()
+    let view = winsaveview()
 
     let candidates = {}
     for object in keys(s:counts)
@@ -91,7 +87,7 @@ fu! wildfire#_fuel()
         let to = extend(to, {"startline": startline, "startcol": startcol,
             \ "endline": endline, "endcol": endcol })
 
-        cal winrestview(winview)
+        cal winrestview(view)
 
         " Some text object cannot be nested. This avoids unwanted behavior.
         if get(s:cannot_be_nested, to.object) && to.count > 1
