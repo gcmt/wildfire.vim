@@ -13,7 +13,7 @@ CONTENTS                                                   *wildfire-contents*
 
         1. Intro ................................. |wildfire-intro|
         2. Usage ................................. |wildfire-usage|
-        3. Advanced setup ........................ |wildfire-advanced-setup|
+        3. Advanced usage ........................ |wildfire-advanced-usage|
         4. About ................................. |wildfire-about|
         5. License ............................... |wildfire-license|
 
@@ -71,7 +71,7 @@ option:
 <
 
 ==============================================================================
-3. Advanced setup                                    *wildfire-advanced-setup*
+3. Advanced usage                                    *wildfire-advanced-usage*
 
 Sometimes considering certain kinds of text objects can be quite annoying. This
 is the case of Html, where, for example, you may want to select just tag objects.
@@ -80,9 +80,27 @@ Wildfire allows you to be selective about which text objects are considered with
 different filetypes:
 >
     let g:wildfire_objects = {
-        \ "*" : ["i'", 'i"', "i)", "i]", "i}", "ip"],  " use '*' to mean 'all other filetypes'
+        \ "*" : ["i'", 'i"', "i)", "i]", "i}"],  " use '*' to mean 'all other filetypes'
         \ "html,xml" : ["at"],  " html and xml share the same text objects
         \}
+<
+One problem with the solution above is that with `html` and `xml` files we
+loose the ability to select the text objects `i'`, `i"`, `i)`, `i]` and `i}`.
+To solve this problem, Wildfire allows you to use different mappings for
+different text object candidates:
+>
+    map <BS> <Plug>(wildfire-water)
+
+    map <SPACE> <Plug>(wildfire-fuel)
+    let g:wildfire_objects = {
+	\ "*" : ["i'", 'i"', "i)", "i]", "i}"]
+    \ }
+
+    " As you can see, to add additional mappings we have to follow a simple convention
+    map <ENTER> <Plug>(wildfire-fuel:tags)
+    let g:wildfire_objects_tags = {
+	\ "html,jinja" : ["at", "it"],
+    \ }
 <
 
 ==============================================================================
