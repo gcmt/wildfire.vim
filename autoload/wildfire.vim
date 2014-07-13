@@ -29,31 +29,30 @@ let s:origin = []
 " Functions
 " =============================================================================
 
-fu! s:load_objects()
+fu! s:load_objects(objects)
     " force `g:wildfire_objects` to be a dictionary
-    let wildfire_objects = type(g:wildfire_objects) == type([]) ?
-        \ {"*": g:wildfire_objects} : copy(g:wildfire_objects)
+    let _objects = type(a:objects) == type([]) ? {"*": a:objects} : a:objects
     " split filetypes that share the same text objects
-    for [ftypes, objects] in items(wildfire_objects)
+    for [ftypes, objs] in items(_objects)
         for ft in split(ftypes, ",")
-            let wildfire_objects[ft] = objects
+            let _objects[ft] = objs
         endfor
     endfor
-    return wildfire_objects
+    return _objects
 endfu
 
-fu! s:Init()
+fu! s:init(objects)
     let s:origin = getpos(".")
     let s:selections_history = []
     let s:counts = {}
-    let wildfire_objects = s:load_objects()
-    for object in get(wildfire_objects, &ft, get(wildfire_objects, "*", []))
+    let _objects = s:load_objects(a:objects)
+    for object in get(_objects, &ft, get(_objects, "*", []))
         let s:counts[object] = 1
     endfor
 endfu
 
-fu! wildfire#start(repeat)
-    cal s:Init()
+fu! wildfire#start(repeat, objects)
+    cal s:init(a:objects)
     cal wildfire#fuel(a:repeat)
 endfu
 

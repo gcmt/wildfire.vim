@@ -31,12 +31,21 @@ let g:wildfire_water_map =
     \ get(g:, "wildfire_water_map", "<BS>")
 
 
-" Commands and Mappings
+" Mappings
 " =============================================================================
 
-nnoremap <silent> <Plug>(wildfire-fuel) :<C-U>call wildfire#start(v:count1)<CR>
-vnoremap <silent> <Plug>(wildfire-fuel) :<C-U>call wildfire#fuel(v:count1)<CR>
-vnoremap <silent> <Plug>(wildfire-water) :<C-U>call wildfire#water(v:count1)<CR>
+vmap <silent> <Plug>(wildfire-water) :<C-U>call wildfire#water(v:count1)<CR>
+
+nmap <silent> <Plug>(wildfire-fuel) :<C-U>call wildfire#start(v:count1, g:wildfire_objects)<CR>
+vmap <silent> <Plug>(wildfire-fuel) :<C-U>call wildfire#fuel(v:count1)<CR>
+
+for var in keys(g:)
+    let label = matchstr(var, '\v(wildfire_objects_)@<=(.+)')
+    if !empty(label)
+        exe "nmap <silent> <Plug>(wildfire-fuel:".label.") :<C-U>call wildfire#start(v:count1, g:".var.")<CR>"
+        exe "vmap <silent> <Plug>(wildfire-fuel:".label.") :<C-U>call wildfire#fuel(v:count1)<CR>"
+    end
+endfor
 
 if !hasmapto('<Plug>(wildfire-fuel)') && !hasmapto('<Plug>(wildfire-water)')
   exe "map" g:wildfire_fuel_map "<Plug>(wildfire-fuel)"
