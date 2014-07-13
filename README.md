@@ -60,6 +60,6 @@ let g:wildfire_objects = {
 " As you can see, to add additional mappings we have to follow a simple convention
 map <ENTER> <Plug>(wildfire-fuel:tags)
 let g:wildfire_objects_tags = {
-    \ "html,jinja" : ["at", "it"],
+    \ "html,xml" : ["at", "it"],
 \ }
 ```
