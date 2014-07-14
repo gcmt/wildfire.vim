@@ -51,7 +51,7 @@ if !hasmapto('<Plug>(wildfire-fuel)')
     exe "map" g:wildfire_fuel_map "<Plug>(wildfire-fuel)"
 end
 if !hasmapto('<Plug>(wildfire-water)')
-    exe "map" g:wildfire_water_map "<Plug>(wildfire-water)"
+    exe "vmap" g:wildfire_water_map "<Plug>(wildfire-water)"
 end
 
 

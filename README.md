@@ -50,7 +50,7 @@ let g:wildfire_objects = {
 One problem with the solution above is that with `html` and `xml` files we loose the ability to select the text objects `i'`, `i"`, `i)`, `i]` and `i}`. To solve this problem, Wildfire allows you to use different mappings for different text object candidates:
 
 ```vim
-map <BS> <Plug>(wildfire-water)
+vmap <BS> <Plug>(wildfire-water)
 
 map <SPACE> <Plug>(wildfire-fuel)
 let g:wildfire_objects = {
