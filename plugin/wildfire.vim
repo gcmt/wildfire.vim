@@ -37,6 +37,7 @@ let g:wildfire_water_map =
 vmap <silent> <Plug>(wildfire-water) :<C-U>call wildfire#Water(v:count1)<CR>
 
 nmap <silent> <Plug>(wildfire-fuel) :<C-U>call wildfire#Start(v:count1, g:wildfire_objects)<CR>
+omap <silent> <Plug>(wildfire-fuel) :<C-U>call wildfire#Start(v:count1, g:wildfire_objects)<CR>
 vmap <silent> <Plug>(wildfire-fuel) :<C-U>call wildfire#Fuel(v:count1)<CR>
 
 for var in keys(g:)
