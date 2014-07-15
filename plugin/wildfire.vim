@@ -78,18 +78,18 @@ end
 " Autocommands
 " =============================================================================
 
-fu! DisableWildfire()
+fu! s:disable_wildfire()
     sil! exec "nnoremap <buffer> " . g:wildfire_fuel_map . " " . g:wildfire_fuel_map
 endfu
 
 augroup wildfire
     au!
     " Disable Wildfire inside buffers with the `buftype` option set (See :h 'buftype')
-    au BufReadPost * if !empty(&bt) | call DisableWildfire() | endif
+    au BufReadPost * if !empty(&bt) | call s:disable_wildfire() | endif
     " Disable Wildfire inside the command-line window
-    au CmdWinEnter * call DisableWildfire()
+    au CmdWinEnter * call s:disable_wildfire()
     " Disable Wildfire inside quickfix buffers
-    au FileType qf call DisableWildfire()
+    au FileType qf call s:disable_wildfire()
     " Setup colors
     au BufWritePost .vimrc call s:setup_colors()
     au Colorscheme * call s:setup_colors()
