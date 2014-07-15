@@ -210,6 +210,134 @@ fu! s:OddQuotes(quote, s)
     return n % 2 != 0
 endfu
 
+" Quick Select
+" =============================================================================
+
+fu! wildfire#QuickSelect(objects)
+    cal s:Init(a:objects)
+    while 1
+        let last_hist_size = len(s:selections_history)
+        cal s:SelectTextObject()
+        let sel = get(s:selections_history, -1)
+        if empty(sel)
+            return
+        end
+        if sel.startline < line("w0")
+            cal wildfire#Water(1)
+            break
+        end
+        if last_hist_size == len(s:selections_history)
+            break
+        end
+    endw
+    exe "norm! \<ESC>"
+    cal setpos(".", s:origin)
+    let save_hl = s:get_colors("Error")
+    hi Error None
+    let marks = s:show_marks(s:selections_history)
+    cal s:jump(marks)
+    sil exe "hi Error" save_hl
+endfu
+
+" To display marks
+fu s:show_marks(selections)
+    try | undojoin | catch | endtry
+    cal matchadd("WildfireShade", '\%>'.(line('w0')-1).'l\%<'.line('w$').'l')
+    let marks = split(g:wildfire_marks, '\zs')
+    let candidates = {}
+    for sel in a:selections
+        if empty(marks) | break | end
+        let mark = remove(marks, 0)
+        let line = getline(sel.startline)
+        let candidates[mark] = [sel, line[sel.startcol-1]]
+        cal setline(sel.startline, s:subst_char(line, sel.startcol-1, mark))
+        cal matchadd("WildfireMark", '\%'.sel.startline.'l\%'.sel.startcol.'c')
+    endfor
+    setl nomodified
+    return candidates
+endfu
+
+" To ask the user where to jump and move there
+fu s:jump(marks)
+    if empty(a:marks) | return | end
+    normal! m'
+    while 1
+        redraw
+        cal s:show_prompt()
+        let choice = s:get_input()
+        if choice =~ "<C-C>\\|<ESC>" | cal s:clear_marks(a:marks)| break | end
+        if has_key(a:marks, choice)
+            cal s:clear_marks(a:marks)
+            cal s:Select(a:marks[choice][0])
+            let new_hist = s:selections_history[:index(split(g:wildfire_marks, '\zs'), choice)]
+            let s:selections_history = new_hist
+            break
+        end
+    endw
+endfu
+
+" To display the prompt
+fu s:show_prompt()
+    echohl WildfirePrompt | echon g:wildfire_prompt | echohl None
+endfu
+
+
+" To clear all marks
+fu s:clear_marks(marks)
+    cal s:clear_highlighting()
+    try | undojoin | catch | endtry
+    for [sel, oldchar] in values(a:marks)
+        cal setline(sel.startline, s:subst_char(getline(sel.startline), sel.startcol-1, oldchar))
+    endfor
+    setl nomodified
+endfu
+
+" To clear Wildfire highlightings
+fu s:clear_highlighting()
+    for m in getmatches()
+        if m.group =~# 'WildfireMark\|WildfireShade'
+            cal matchdelete(m.id)
+        end
+    endfor
+endfu
+
+" Utilities
+" =============================================================================
+
+" To get the colors of given highlight group
+" Note: does not handle linked groups
+fu s:get_colors(group)
+    redir => raw_hl | exe "hi" a:group | redir END
+    if match(raw_hl, 'cleared') > 0
+        return "None"
+    end
+    return substitute(matchstr(raw_hl, '\v(xxx)@<=.*'), "\n", " ", "")
+endfu
+
+" To substitute a character in a string
+fu s:subst_char(str, col, char)
+    return strpart(a:str, 0, a:col) . a:char . strpart(a:str, a:col+1)
+endfu
+
+" To get a key pressed by the user
+fu s:get_input()
+    let char = strtrans(getchar())
+        if char == 13 | return "<CR>"
+    elseif char == 27 | return "<ESC>"
+    elseif char == 9 | return "<TAB>"
+    elseif char >= 1 && char <= 26 | return "<C-" . nr2char(char+64) . ">"
+    elseif char != 0 | return nr2char(char)
+    elseif match(char, '<fc>^D') > 0 | return "<C-SPACE>"
+    elseif match(char, 'kb') > 0 | return "<BS>"
+    elseif match(char, 'ku') > 0 | return "<UP>"
+    elseif match(char, 'kd') > 0 | return "<DOWN>"
+    elseif match(char, 'kl') > 0 | return "<LEFT>"
+    elseif match(char, 'kr') > 0 | return "<RIGHT>"
+    elseif match(char, 'k\\d\\+') > 0 | return "<F" . match(char, '\\d\\+', 4)] . ">"
+    end
+endfu
+
+" =============================================================================
 
 let &cpo = s:save_cpo
 unlet s:save_cpo

@@ -17,6 +17,16 @@ let g:loaded_wildfire = 1
 let s:save_cpo = &cpo
 set cpo&vim
 
+" Colors
+" =============================================================================
+
+fu! s:setup_colors()
+    hi default link WildfireMark WarningMsg
+    hi default link WildfirePrompt String
+    hi default link WildfireShade Comment
+endfu
+
+cal s:setup_colors()
 
 " Settings
 " =============================================================================
@@ -30,11 +40,18 @@ let g:wildfire_fuel_map =
 let g:wildfire_water_map =
     \ get(g:, "wildfire_water_map", "<BS>")
 
+let g:wildfire_prompt =
+    \ get(g:, "wildfire_prompt", " Target: ")
+
+let g:wildfire_marks =
+    \ get(g:, "wildfire_marks", "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 
 " Mappings
 " =============================================================================
 
 vmap <silent> <Plug>(wildfire-water) :<C-U>call wildfire#Water(v:count1)<CR>
+
+nmap <silent> <Plug>(wildfire-quick-select) :<C-U>call wildfire#QuickSelect(g:wildfire_objects)<CR>
 
 nmap <silent> <Plug>(wildfire-fuel) :<C-U>call wildfire#Start(v:count1, g:wildfire_objects)<CR>
 omap <silent> <Plug>(wildfire-fuel) :<C-U>call wildfire#Start(v:count1, g:wildfire_objects)<CR>
@@ -43,7 +60,8 @@ vmap <silent> <Plug>(wildfire-fuel) :<C-U>call wildfire#Fuel(v:count1)<CR>
 for var in keys(g:)
     let label = matchstr(var, '\v(wildfire_objects_)@<=(.+)')
     if !empty(label)
-        exe "nmap <silent> <Plug>(wildfire-fuel:".label.") :<C-U>call wildfire#Start(v:count1, g:".var.")<CR>"
+        exe "nmap <silent> <Plug>(wildfire-quick-select:".label.") :<C-U>call wildfire#QuickSelect(".var.")<CR>"
+        exe "nmap <silent> <Plug>(wildfire-fuel:".label.") :<C-U>call wildfire#Start(v:count1, ".var.")<CR>"
         exe "vmap <silent> <Plug>(wildfire-fuel:".label.") :<C-U>call wildfire#Fuel(v:count1)<CR>"
     end
 endfor
@@ -54,7 +72,6 @@ end
 if !hasmapto('<Plug>(wildfire-water)')
     exe "vmap" g:wildfire_water_map "<Plug>(wildfire-water)"
 end
-
 
 " Autocommands
 " =============================================================================
@@ -71,8 +88,12 @@ augroup wildfire
     au CmdWinEnter * call DisableWildfire()
     " Disable Wildfire inside quickfix buffers
     au FileType qf call DisableWildfire()
+    " Setup colors
+    au BufWritePost .vimrc call s:setup_colors()
+    au Colorscheme * call s:setup_colors()
 augroup END
 
+" =============================================================================
 
 let &cpo = s:save_cpo
 unlet s:save_cpo
