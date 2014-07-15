@@ -232,7 +232,7 @@ fu! wildfire#QuickSelect(objects)
     endw
     exe "norm! \<ESC>"
     cal setpos(".", s:origin)
-    let save_hl = s:get_colors("Error")
+    let save_hl = s:colors_of("Error")
     hi Error None
     let marks = s:show_marks(s:selections_history)
     cal s:jump(marks)
@@ -250,7 +250,7 @@ fu s:show_marks(selections)
         let mark = remove(marks, 0)
         let line = getline(sel.startline)
         let candidates[mark] = [sel, line[sel.startcol-1]]
-        cal setline(sel.startline, s:subst_char(line, sel.startcol-1, mark))
+        cal setline(sel.startline, s:str_subst(line, sel.startcol-1, mark))
         cal matchadd("WildfireMark", '\%'.sel.startline.'l\%'.sel.startcol.'c')
     endfor
     setl nomodified
@@ -264,7 +264,7 @@ fu s:jump(marks)
     while 1
         redraw
         cal s:show_prompt()
-        let choice = s:get_input()
+        let choice = s:get_char()
         if choice =~ "<C-C>\\|<ESC>" | cal s:clear_marks(a:marks)| break | end
         if has_key(a:marks, choice)
             cal s:clear_marks(a:marks)
@@ -284,21 +284,12 @@ endfu
 
 " To clear all marks
 fu s:clear_marks(marks)
-    cal s:clear_highlighting()
+    cal s:clear_matches("WildfireMark", "WildfireShade")
     try | undojoin | catch | endtry
     for [sel, oldchar] in values(a:marks)
-        cal setline(sel.startline, s:subst_char(getline(sel.startline), sel.startcol-1, oldchar))
+        cal setline(sel.startline, s:str_subst(getline(sel.startline), sel.startcol-1, oldchar))
     endfor
     setl nomodified
-endfu
-
-" To clear Wildfire highlightings
-fu s:clear_highlighting()
-    for m in getmatches()
-        if m.group =~# 'WildfireMark\|WildfireShade'
-            cal matchdelete(m.id)
-        end
-    endfor
 endfu
 
 " Utilities
@@ -306,7 +297,7 @@ endfu
 
 " To get the colors of given highlight group
 " Note: does not handle linked groups
-fu s:get_colors(group)
+fu s:colors_of(group)
     redir => raw_hl | exe "hi" a:group | redir END
     if match(raw_hl, 'cleared') > 0
         return "None"
@@ -314,13 +305,23 @@ fu s:get_colors(group)
     return substitute(matchstr(raw_hl, '\v(xxx)@<=.*'), "\n", " ", "")
 endfu
 
+" To clear matches of given groups
+fu s:clear_matches(...)
+    let groups = join(map(copy(a:000), "'^'.v:val.'$'"), '\|')
+    for m in getmatches()
+        if m.group =~# groups
+            cal matchdelete(m.id)
+        end
+    endfor
+endfu
+
 " To substitute a character in a string
-fu s:subst_char(str, col, char)
+fu s:str_subst(str, col, char)
     return strpart(a:str, 0, a:col) . a:char . strpart(a:str, a:col+1)
 endfu
 
 " To get a key pressed by the user
-fu s:get_input()
+fu s:get_char()
     let char = strtrans(getchar())
         if char == 13 | return "<CR>"
     elseif char == 27 | return "<ESC>"
