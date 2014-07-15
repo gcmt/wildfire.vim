@@ -64,13 +64,10 @@ let g:wildfire_objects_tags = {
 \ }
 ```
 
-### Quick select (experimental)
+### Quick selection (experimental)
 
 ```vim
 nmap <leader>s <Plug>(wildfire-quick-select)
 ```
 
 ![Preview](_assets/quickselect.gif "Quick select.")
-
-
-
