@@ -85,8 +85,8 @@ fu! s:select_text_object()
         let selection = {"object": object, "count": s:counts[object]}
 
         let [startline, startcol, endline, endcol] = s:edges(selection)
-        let selection = extend(selection, {"startline": startline, "startcol": startcol,
-            \ "endline": endline, "endcol": endcol })
+        let selection = extend(selection,
+            \ {"startline": startline, "startcol": startcol, "endline": endline, "endcol": endcol })
 
         cal winrestview(view)
 
