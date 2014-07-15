@@ -29,7 +29,39 @@ let s:origin = []
 " Functions
 " =============================================================================
 
-fu! s:LoadObjects(objects)
+fu! wildfire#Start(repeat, objects)
+    cal s:init(a:objects)
+    cal wildfire#Fuel(a:repeat)
+endfu
+
+fu! wildfire#Fuel(repeat)
+    for i in range(a:repeat)
+        cal s:select_text_object()
+    endfor
+endfu
+
+fu! wildfire#Water(repeat)
+    for i in range(a:repeat)
+        cal setpos(".", s:origin)
+        if len(s:history) > 1
+            let s:counts[remove(s:history, -1).selection.object] -= 1
+            cal winrestview(get(s:history, -1).view)
+            cal s:select(get(s:history, -1).selection)
+        endif
+    endfor
+endfu
+
+fu! s:init(objects)
+    let s:origin = getpos(".")
+    let s:history = []
+    let s:counts = {}
+    let _objects = s:load_objects(a:objects)
+    for object in get(_objects, &ft, get(_objects, "*", []))
+        let s:counts[object] = 1
+    endfor
+endfu
+
+fu! s:load_objects(objects)
     " force `g:wildfire_objects` to be a dictionary
     let _objects = type(a:objects) == type([]) ? {"*": a:objects} : a:objects
     " split filetypes that share the same text objects
@@ -41,39 +73,7 @@ fu! s:LoadObjects(objects)
     return _objects
 endfu
 
-fu! s:Init(objects)
-    let s:origin = getpos(".")
-    let s:history = []
-    let s:counts = {}
-    let _objects = s:LoadObjects(a:objects)
-    for object in get(_objects, &ft, get(_objects, "*", []))
-        let s:counts[object] = 1
-    endfor
-endfu
-
-fu! wildfire#Start(repeat, objects)
-    cal s:Init(a:objects)
-    cal wildfire#Fuel(a:repeat)
-endfu
-
-fu! wildfire#Fuel(repeat)
-    for i in range(a:repeat)
-        cal s:SelectTextObject()
-    endfor
-endfu
-
-fu! wildfire#Water(repeat)
-    for i in range(a:repeat)
-        cal setpos(".", s:origin)
-        if len(s:history) > 1
-            let s:counts[remove(s:history, -1).selection.object] -= 1
-            cal winrestview(get(s:history, -1).view)
-            cal s:Select(get(s:history, -1).selection)
-        endif
-    endfor
-endfu
-
-fu! s:SelectTextObject()
+fu! s:select_text_object()
 
     cal setpos(".", s:origin)
 
@@ -84,7 +84,7 @@ fu! s:SelectTextObject()
 
         let selection = {"object": object, "count": s:counts[object]}
 
-        let [startline, startcol, endline, endcol] = s:Edges(selection)
+        let [startline, startcol, endline, endcol] = s:edges(selection)
         let selection = extend(selection, {"startline": startline, "startcol": startcol,
             \ "endline": endline, "endcol": endcol })
 
@@ -108,11 +108,11 @@ fu! s:SelectTextObject()
             continue
         endif
 
-        let size = s:Size(selection)
+        let size = s:size(selection)
 
         " This happens when the _count is incremented but the selection remains still
         let _selection = extend(copy(selection), {"count": selection.count-1})
-        if s:AlreadySelected(_selection)
+        if s:already_selected(_selection)
             continue
         endif
 
@@ -120,7 +120,7 @@ fu! s:SelectTextObject()
         if object =~ "a\"\\|i\"\\|a'\\|i'" && startline == endline
             let _selection = extend(copy(selection),
                 \ {"count": selection.count-1, "startcol": selection.startcol+1, "endcol": selection.endcol-1})
-            if s:AlreadySelected(_selection)
+            if s:already_selected(_selection)
                 " When there is no more string to select on the same line, vim
                 " selects the outer string text object. This is far from the
                 " desired behavior
@@ -128,14 +128,14 @@ fu! s:SelectTextObject()
             endif
             let _selection = extend(copy(selection),
                 \ {"count": selection.count-1, "startcol": selection.startcol+1})
-            if s:AlreadySelected(_selection)
+            if s:already_selected(_selection)
                 " This follows the previous check. When the string ends the
                 " line, the size of the text object is just one character less
                 continue
             endif
             let quote = strpart(object, 1)
             let [before, after] = [getline("'<")[:selection.startcol-3], getline("'<")[selection.endcol+1:]]
-            if s:OddQuotes(quote, before) || s:OddQuotes(quote, after)
+            if s:odd_quotes(quote, before) || s:odd_quotes(quote, after)
                 continue
             endif
         endif
@@ -144,20 +144,20 @@ fu! s:SelectTextObject()
 
     endfor
 
-    cal s:SelectBestCandidate(candidates)
+    cal s:select_best_candidate(candidates)
 
 endfu
 
 " To select the closest text object among the candidates
-fu! s:SelectBestCandidate(candidates)
+fu! s:select_best_candidate(candidates)
     if len(a:candidates)
         let selection = a:candidates[min(keys(a:candidates))]
         let s:history = add(s:history, {"selection": selection, "view": winsaveview()})
         let s:counts[selection.object] += 1
-        cal s:Select(selection)
+        cal s:select(selection)
     elseif len(s:history)
         " get stuck on the last selection
-        cal s:Select(get(s:history, -1).selection)
+        cal s:select(get(s:history, -1).selection)
     else
         " do nothing
         exec "sil! norm! \<ESC>"
@@ -165,14 +165,14 @@ fu! s:SelectBestCandidate(candidates)
 endfu
 
 " To retrun the edges of a text object
-fu! s:Edges(selection)
-    cal s:Select(a:selection)
+fu! s:edges(selection)
+    cal s:select(a:selection)
     exe "sil! norm! \<ESC>"
     return [line("'<"), col("'<"), line("'>"), col("'>")]
 endfu
 
 " To select a text object
-fu! s:Select(selection)
+fu! s:select(selection)
     exe "sil! norm! \<ESC>v\<ESC>v"
     if get(s:vim_text_objects, a:selection.object)
         " use counts when selecting vim text objects
@@ -186,7 +186,7 @@ fu! s:Select(selection)
 endfu
 
 " To check if a text object has been already selected
-fu! s:AlreadySelected(selection)
+fu! s:already_selected(selection)
     for s in s:history
         if s.selection == a:selection
             return 1
@@ -196,7 +196,7 @@ fu! s:AlreadySelected(selection)
 endfu
 
 " To return the size of a text object
-fu! s:Size(selection)
+fu! s:size(selection)
     if a:selection.startline == a:selection.endline
         let line = getline(a:selection.startline)
         return strlen(strpart(line, a:selection.startcol, a:selection.endcol-a:selection.startcol+1))
@@ -208,7 +208,7 @@ fu! s:Size(selection)
 endfu
 
 " To check if in a strings there is an odd number of quotes
-fu! s:OddQuotes(quote, s)
+fu! s:odd_quotes(quote, s)
     let n = 0
     for i in range(0, strlen(a:s))
         if a:s[i] == a:quote && !(i > 0 && a:s[i-1] == "\\")
@@ -222,10 +222,10 @@ endfu
 " =============================================================================
 
 fu! wildfire#QuickSelect(objects)
-    cal s:Init(a:objects)
+    cal s:init(a:objects)
     while 1
         let last_hist_size = len(s:history)
-        cal s:SelectTextObject()
+        cal s:select_text_object()
         let sel = get(s:history, -1).selection
         if empty(sel)
             return
@@ -276,7 +276,7 @@ fu s:jump(marks)
         if choice =~ "<C-C>\\|<ESC>" | cal s:clear_marks(a:marks)| break | end
         if has_key(a:marks, choice)
             cal s:clear_marks(a:marks)
-            cal s:Select(a:marks[choice][0])
+            cal s:select(a:marks[choice][0])
             let new_hist = s:history[:index(split(g:wildfire_marks, '\zs'), choice)]
             let s:history = new_hist
             break
