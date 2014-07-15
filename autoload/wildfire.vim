@@ -180,7 +180,7 @@ fu! s:select(selection)
     else
         " counts might not be suported by non-defautl text objects
         for n in range(a:selection.count)
-            exe "sil! norm " . a:to.object
+            exe "sil! norm " . a:selection.object
         endfor
     endif
 endfu
