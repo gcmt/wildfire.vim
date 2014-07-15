@@ -111,8 +111,8 @@ fu! s:SelectTextObject()
         let size = s:Size(selection)
 
         " This happens when the _count is incremented but the selection remains still
-        let _to = extend(copy(selection), {"count": selection.count-1})
-        if s:AlreadySelected(_to)
+        let _selection = extend(copy(selection), {"count": selection.count-1})
+        if s:AlreadySelected(_selection)
             continue
         endif
 
