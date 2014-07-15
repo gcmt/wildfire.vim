@@ -52,6 +52,7 @@ let g:wildfire_marks =
 vmap <silent> <Plug>(wildfire-water) :<C-U>call wildfire#Water(v:count1)<CR>
 
 nmap <silent> <Plug>(wildfire-quick-select) :<C-U>call wildfire#QuickSelect(g:wildfire_objects)<CR>
+omap <silent> <Plug>(wildfire-quick-select) :<C-U>call wildfire#QuickSelect(g:wildfire_objects)<CR>
 
 nmap <silent> <Plug>(wildfire-fuel) :<C-U>call wildfire#Start(v:count1, g:wildfire_objects)<CR>
 omap <silent> <Plug>(wildfire-fuel) :<C-U>call wildfire#Start(v:count1, g:wildfire_objects)<CR>
@@ -61,6 +62,7 @@ for var in keys(g:)
     let label = matchstr(var, '\v(wildfire_objects_)@<=(.+)')
     if !empty(label)
         exe "nmap <silent> <Plug>(wildfire-quick-select:".label.") :<C-U>call wildfire#QuickSelect(".var.")<CR>"
+        exe "omap <silent> <Plug>(wildfire-quick-select:".label.") :<C-U>call wildfire#QuickSelect(".var.")<CR>"
         exe "nmap <silent> <Plug>(wildfire-fuel:".label.") :<C-U>call wildfire#Start(v:count1, ".var.")<CR>"
         exe "vmap <silent> <Plug>(wildfire-fuel:".label.") :<C-U>call wildfire#Fuel(v:count1)<CR>"
     end
