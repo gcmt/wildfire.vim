@@ -82,63 +82,65 @@ fu! s:SelectTextObject()
     let candidates = {}
     for object in keys(s:counts)
 
-        let to = {"object": object, "count": s:counts[object]}
+        let selection = {"object": object, "count": s:counts[object]}
 
-        let [startline, startcol, endline, endcol] = s:Edges(to)
-        let to = extend(to, {"startline": startline, "startcol": startcol,
+        let [startline, startcol, endline, endcol] = s:Edges(selection)
+        let selection = extend(selection, {"startline": startline, "startcol": startcol,
             \ "endline": endline, "endcol": endcol })
 
         cal winrestview(view)
 
         " Some text object cannot be nested. This avoids unwanted behavior.
-        if get(s:cannot_be_nested, to.object) && to.count > 1
+        if get(s:cannot_be_nested, selection.object) && selection.count > 1
             continue
         endif
 
         " The selection failed with the candidate text object
-        if to.startline == to.endline && to.startcol == to.endcol
+        if selection.startline == selection.endline && selection.startcol == selection.endcol
             continue
         endif
 
         " Sometimes Vim selects text objects even if the cursor is outside the
         " them (e.g. `it`, `i"`, etc). We don't want this.
         let cursor_col = s:origin[2]
-        if to.startline == to.endline && (cursor_col < to.startcol || cursor_col > to.endcol)
+        if selection.startline == selection.endline && (cursor_col < selection.startcol || cursor_col > selection.endcol)
             let s:counts[object] += 1
             continue
         endif
 
-        let size = s:Size(to)
+        let size = s:Size(selection)
 
         " This happens when the _count is incremented but the selection remains still
-        let _to = extend(copy(to), {"count": to.count-1})
+        let _to = extend(copy(selection), {"count": selection.count-1})
         if s:AlreadySelected(_to)
             continue
         endif
 
         " Special case
         if object =~ "a\"\\|i\"\\|a'\\|i'" && startline == endline
-            let _to = extend(copy(to), {"count": to.count-1, "startcol": to.startcol+1, "endcol": to.endcol-1})
-            if s:AlreadySelected(_to)
+            let _selection = extend(copy(selection),
+                \ {"count": selection.count-1, "startcol": selection.startcol+1, "endcol": selection.endcol-1})
+            if s:AlreadySelected(_selection)
                 " When there is no more string to select on the same line, vim
                 " selects the outer string text object. This is far from the
                 " desired behavior
                 continue
             endif
-            let _to = extend(copy(to), {"count": to.count-1, "startcol": to.startcol+1})
-            if s:AlreadySelected(_to)
+            let _selection = extend(copy(selection),
+                \ {"count": selection.count-1, "startcol": selection.startcol+1})
+            if s:AlreadySelected(_selection)
                 " This follows the previous check. When the string ends the
                 " line, the size of the text object is just one character less
                 continue
             endif
             let quote = strpart(object, 1)
-            let [before, after] = [getline("'<")[:to.startcol-3], getline("'<")[to.endcol+1:]]
+            let [before, after] = [getline("'<")[:selection.startcol-3], getline("'<")[selection.endcol+1:]]
             if s:OddQuotes(quote, before) || s:OddQuotes(quote, after)
                 continue
             endif
         endif
 
-        let candidates[size] = to
+        let candidates[size] = selection
 
     endfor
 
@@ -149,10 +151,10 @@ endfu
 " To select the closest text object among the candidates
 fu! s:SelectBestCandidate(candidates)
     if len(a:candidates)
-        let to = a:candidates[min(keys(a:candidates))]
-        let s:history = add(s:history, {"selection": to, "view": winsaveview()})
-        let s:counts[to.object] += 1
-        cal s:Select(to)
+        let selection = a:candidates[min(keys(a:candidates))]
+        let s:history = add(s:history, {"selection": selection, "view": winsaveview()})
+        let s:counts[selection.object] += 1
+        cal s:Select(selection)
     elseif len(s:history)
         " get stuck on the last selection
         cal s:Select(get(s:history, -1).selection)
@@ -163,30 +165,30 @@ fu! s:SelectBestCandidate(candidates)
 endfu
 
 " To retrun the edges of a text object
-fu! s:Edges(to)
-    cal s:Select(a:to)
+fu! s:Edges(selection)
+    cal s:Select(a:selection)
     exe "sil! norm! \<ESC>"
     return [line("'<"), col("'<"), line("'>"), col("'>")]
 endfu
 
 " To select a text object
-fu! s:Select(to)
+fu! s:Select(selection)
     exe "sil! norm! \<ESC>v\<ESC>v"
-    if get(s:vim_text_objects, a:to.object)
+    if get(s:vim_text_objects, a:selection.object)
         " use counts when selecting vim text objects
-        exe "sil! norm! " . a:to.count . a:to.object
+        exe "sil! norm! " . a:selection.count . a:selection.object
     else
         " counts might not be suported by non-defautl text objects
-        for n in range(a:to.count)
+        for n in range(a:selection.count)
             exe "sil! norm " . a:to.object
         endfor
     endif
 endfu
 
 " To check if a text object has been already selected
-fu! s:AlreadySelected(to)
+fu! s:AlreadySelected(selection)
     for s in s:history
-        if s.selection == a:to
+        if s.selection == a:selection
             return 1
         end
     endfor
@@ -194,14 +196,14 @@ fu! s:AlreadySelected(to)
 endfu
 
 " To return the size of a text object
-fu! s:Size(to)
-    if a:to.startline == a:to.endline
-        let line = getline(a:to.startline)
-        return strlen(strpart(line, a:to.startcol, a:to.endcol-a:to.startcol+1))
+fu! s:Size(selection)
+    if a:selection.startline == a:selection.endline
+        let line = getline(a:selection.startline)
+        return strlen(strpart(line, a:selection.startcol, a:selection.endcol-a:selection.startcol+1))
     endif
-    let size = strlen(strpart(getline(a:to.startline), a:to.startcol))
-    let size += strlen(strpart(getline(a:to.endline), 0, a:to.endcol))
-    let size += winwidth(0) * abs(a:to.startline - a:to.endline)  " good enough
+    let size = strlen(strpart(getline(a:selection.startline), a:selection.startcol))
+    let size += strlen(strpart(getline(a:selection.endline), 0, a:selection.endcol))
+    let size += winwidth(0) * abs(a:selection.startline - a:selection.endline)  " good enough
     return size
 endfu
 
