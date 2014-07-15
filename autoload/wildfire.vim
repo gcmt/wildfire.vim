@@ -22,7 +22,7 @@ for char in split("(){}[]<>'`\"bBwWpst", "\\zs")
 endfor
 
 let s:counts = {}
-let s:selections_history = []
+let s:history = []
 let s:origin = []
 
 
@@ -43,7 +43,7 @@ endfu
 
 fu! s:Init(objects)
     let s:origin = getpos(".")
-    let s:selections_history = []
+    let s:history = []
     let s:counts = {}
     let _objects = s:LoadObjects(a:objects)
     for object in get(_objects, &ft, get(_objects, "*", []))
@@ -65,9 +65,10 @@ endfu
 fu! wildfire#Water(repeat)
     for i in range(a:repeat)
         cal setpos(".", s:origin)
-        if len(s:selections_history) > 1
-            let s:counts[remove(s:selections_history, -1).object] -= 1
-            cal s:Select(get(s:selections_history, -1))
+        if len(s:history) > 1
+            let s:counts[remove(s:history, -1).selection.object] -= 1
+            cal winrestview(get(s:history, -1).view)
+            cal s:Select(get(s:history, -1).selection)
         endif
     endfor
 endfu
@@ -149,12 +150,12 @@ endfu
 fu! s:SelectBestCandidate(candidates)
     if len(a:candidates)
         let to = a:candidates[min(keys(a:candidates))]
-        let s:selections_history = add(s:selections_history, to)
+        let s:history = add(s:history, {"selection": to, "view": winsaveview()})
         let s:counts[to.object] += 1
         cal s:Select(to)
-    elseif len(s:selections_history)
+    elseif len(s:history)
         " get stuck on the last selection
-        cal s:Select(get(s:selections_history, -1))
+        cal s:Select(get(s:history, -1).selection)
     else
         " do nothing
         exec "sil! norm! \<ESC>"
@@ -184,7 +185,12 @@ endfu
 
 " To check if a text object has been already selected
 fu! s:AlreadySelected(to)
-    return index(s:selections_history, a:to) >= 0
+    for s in s:history
+        if s.selection == a:to
+            return 1
+        end
+    endfor
+    return 0
 endfu
 
 " To return the size of a text object
@@ -216,9 +222,9 @@ endfu
 fu! wildfire#QuickSelect(objects)
     cal s:Init(a:objects)
     while 1
-        let last_hist_size = len(s:selections_history)
+        let last_hist_size = len(s:history)
         cal s:SelectTextObject()
-        let sel = get(s:selections_history, -1)
+        let sel = get(s:history, -1).selection
         if empty(sel)
             return
         end
@@ -226,7 +232,7 @@ fu! wildfire#QuickSelect(objects)
             cal wildfire#Water(1)
             break
         end
-        if last_hist_size == len(s:selections_history)
+        if last_hist_size == len(s:history)
             break
         end
     endw
@@ -234,7 +240,7 @@ fu! wildfire#QuickSelect(objects)
     cal setpos(".", s:origin)
     let save_hl = s:colors_of("Error")
     hi Error None
-    let marks = s:show_marks(s:selections_history)
+    let marks = s:show_marks(s:history)
     cal s:jump(marks)
     sil exe "hi Error" save_hl
 endfu
@@ -245,13 +251,13 @@ fu s:show_marks(selections)
     cal matchadd("WildfireShade", '\%>'.(line('w0')-1).'l\%<'.line('w$').'l')
     let marks = split(g:wildfire_marks, '\zs')
     let candidates = {}
-    for sel in a:selections
+    for s in a:selections
         if empty(marks) | break | end
         let mark = remove(marks, 0)
-        let line = getline(sel.startline)
-        let candidates[mark] = [sel, line[sel.startcol-1]]
-        cal setline(sel.startline, s:str_subst(line, sel.startcol-1, mark))
-        cal matchadd("WildfireMark", '\%'.sel.startline.'l\%'.sel.startcol.'c')
+        let line = getline(s.selection.startline)
+        let candidates[mark] = [s.selection, line[s.selection.startcol-1]]
+        cal setline(s.selection.startline, s:str_subst(line, s.selection.startcol-1, mark))
+        cal matchadd("WildfireMark", '\%'.s.selection.startline.'l\%'.s.selection.startcol.'c')
     endfor
     setl nomodified
     return candidates
@@ -269,8 +275,8 @@ fu s:jump(marks)
         if has_key(a:marks, choice)
             cal s:clear_marks(a:marks)
             cal s:Select(a:marks[choice][0])
-            let new_hist = s:selections_history[:index(split(g:wildfire_marks, '\zs'), choice)]
-            let s:selections_history = new_hist
+            let new_hist = s:history[:index(split(g:wildfire_marks, '\zs'), choice)]
+            let s:history = new_hist
             break
         end
     endw
