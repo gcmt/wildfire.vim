@@ -39,30 +39,14 @@ press a number followed by `<ENTER>` (e.g. pressing `2<ENTER>` will select the
 second closest text
 object).
 
-To change default mappings use the following options:
-
+You can change default mappings with:
 >
     " This selects the next closest text object.
-    let g:wildfire_fuel_map = "<ENTER>"
-<
->
+    map <SPACE> <Plug>(wildfire-fuel)
+
     " This selects the previous closest text object.
-    let g:wildfire_water_map = "<BS>"
+    vmap <C-SPACE> <Plug>(wildfire-water)
 <
-
-You can map keys to '<Plug>' mappings:
->
-   map <ENTER> <Plug>(wildfire-fuel)
-   map <BS> <Plug>(wildfire-water)
-<
-
-This is useful when you want to hack key mappings. For example, call fuel/water
-via another plugins. You can point the interface of fuel/water like below:
->
-   map <ENTER> <Plug>(wildfire-fuel)U
-<
-This key mapping make upper-case string on the cursor.
-
 By default, Wildfire selects any of the text objects `i'`, `i"`, `i)`, `i]`,
 `i}`, `ip` and `it`. You can decide the ones to consider with the following
 option:

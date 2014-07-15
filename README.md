@@ -23,7 +23,7 @@ You can change default mappings with:
 map <SPACE> <Plug>(wildfire-fuel)
 
 " This selects the previous closest text object.
-map <C-SPACE> <Plug>(wildfire-water)
+vmap <C-SPACE> <Plug>(wildfire-water)
 ```
 
 By default, *Wildfire* selects any of the text objects `i'`, `i"`, `i)`, `i]`, `i}`, `ip` and `it`. You can decide the ones to consider with the following option:
