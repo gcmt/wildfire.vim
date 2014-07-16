@@ -316,9 +316,8 @@ endfu
 
 " To clear matches of given groups
 fu s:clear_matches(...)
-    let groups = join(map(copy(a:000), "'^'.v:val.'$'"), '\|')
     for m in getmatches()
-        if m.group =~# groups
+        if index(a:000, m.group) != -1
             cal matchdelete(m.id)
         end
     endfor
