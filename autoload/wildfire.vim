@@ -62,7 +62,7 @@ fu! s:init(objects)
 endfu
 
 fu! s:load_objects(objects)
-    " force `g:wildfire_objects` to be a dictionary
+    " force `a:objects` to be a dictionary
     let _objects = type(a:objects) == type([]) ? {"*": a:objects} : a:objects
     " split filetypes that share the same text objects
     for [ftypes, objs] in items(_objects)
@@ -154,6 +154,7 @@ endfu
 " To select the closest text object among the candidates
 fu! s:select_best_candidate(candidates)
     if len(a:candidates)
+        " select the closest text object (the one with the smaller size)
         let selection = a:candidates[min(keys(a:candidates))]
         let s:history = add(s:history, {"selection": selection, "view": winsaveview()})
         let s:counts[selection.object] += 1
@@ -181,7 +182,7 @@ fu! s:select(selection)
         " use counts when selecting vim text objects
         exe "sil! norm! " . a:selection.count . a:selection.object
     else
-        " counts might not be suported by non-defautl text objects
+        " counts might not be suported by non-default text objects
         for n in range(a:selection.count)
             exe "sil! norm " . a:selection.object
         endfor
@@ -242,6 +243,7 @@ fu! wildfire#QuickSelect(objects)
     exe "norm! \<ESC>"
     cal setpos(".", s:origin)
     let save_hl = s:turn_off_syntax_errs()
+    let marks = s:show_marks(map(copy(s:history), "v:val.selection"))
     cal s:jump(marks)
     cal s:turn_on_syntax_errs(save_hl)
 endfu
@@ -252,13 +254,14 @@ fu s:show_marks(selections)
     cal matchadd("WildfireShade", '\%>'.(line('w0')-1).'l\%<'.line('w$').'l')
     let marks = split(g:wildfire_marks, '\zs')
     let candidates = {}
-    for s in a:selections
+    for selection in a:selections
         if empty(marks) | break | end
         let mark = remove(marks, 0)
-        let line = getline(s.selection.startline)
-        let candidates[mark] = [s.selection, line[s.selection.startcol-1]]
-        cal setline(s.selection.startline, s:str_subst(line, s.selection.startcol-1, mark))
-        cal matchadd("WildfireMark", '\%'.s.selection.startline.'l\%'.s.selection.startcol.'c')
+        let line = getline(selection.startline)
+        " line[selection.startcol-1] stands for the character replaced with the mark
+        let candidates[mark] = [selection, line[selection.startcol-1]]
+        cal setline(selection.startline, s:str_subst(line, selection.startcol-1, mark))
+        cal matchadd("WildfireMark", '\%'.selection.startline.'l\%'.selection.startcol.'c')
     endfor
     setl nomodified
     return candidates
@@ -276,8 +279,7 @@ fu s:jump(marks)
         if has_key(a:marks, choice)
             cal s:clear_marks(a:marks)
             cal s:select(a:marks[choice][0])
-            let new_hist = s:history[:index(split(g:wildfire_marks, '\zs'), choice)]
-            let s:history = new_hist
+            let s:history = s:history[:stridx(g:wildfire_marks, choice)]
             break
         end
     endw
