@@ -241,11 +241,9 @@ fu! wildfire#QuickSelect(objects)
     endw
     exe "norm! \<ESC>"
     cal setpos(".", s:origin)
-    let save_hl = s:colors_of("Error")
-    hi Error None
-    let marks = s:show_marks(s:history)
+    let save_hl = s:turn_off_syntax_errs()
     cal s:jump(marks)
-    sil exe "hi Error" save_hl
+    cal s:turn_on_syntax_errs(save_hl)
 endfu
 
 " To display marks
@@ -301,17 +299,43 @@ fu s:clear_marks(marks)
     setl nomodified
 endfu
 
+" To turn off syntax errors. The returned value can be used to restore syntax
+" errors with s:turn_on_syntax_err()
+fu s:turn_off_syntax_errs()
+    let colors = s:colors_of("Error")
+    hi Error None
+    return colors
+endfu
+
+" To turn on syntax errors
+fu s:turn_on_syntax_errs(colors)
+    cal s:set_colors("Error", a:colors)
+endfu
+
 " Utilities
 " =============================================================================
 
-" To get the colors of given highlight group
-" Note: does not handle linked groups
+" To get the colors of given highlight group.
 fu s:colors_of(group)
     redir => raw_hl | exe "hi" a:group | redir END
-    if match(raw_hl, 'cleared') > 0
-        return "None"
+    let raw_hl = substitute(raw_hl, "\n", " ", "")
+    if match(raw_hl, 'cleared') >= 0
+        return {"colors": "None", "link": ""}
     end
-    return substitute(matchstr(raw_hl, '\v(xxx)@<=.*'), "\n", " ", "")
+    if match(raw_hl, "links to") >= 0
+        return {"colors": "", "link": matchstr(raw_hl, '\v(links to )@<=.*')}
+    end
+    return {"colors": matchstr(raw_hl, '\v( xxx )@<=.*'), "link": ""}
+endfu
+
+" To set the colors for a given highlight group. Note that this function should
+" be used exclusively with colors retrieved with the function s:color_of(..)
+fu s:set_colors(group, colors)
+    if !empty(a:colors.link)
+        exe "hi link" a:group a:colors.link
+    else
+        exe "hi" a:group a:colors.colors
+    end
 endfu
 
 " To clear matches of given groups
