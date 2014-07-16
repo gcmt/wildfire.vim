@@ -103,9 +103,11 @@ fu! s:select_text_object()
         " Sometimes Vim selects text objects even if the cursor is outside the
         " them (e.g. `it`, `i"`, etc). We don't want this.
         let cursor_col = s:origin[2]
-        if selection.startline == selection.endline && (cursor_col < selection.startcol || cursor_col > selection.endcol)
-            let s:counts[object] += 1
-            continue
+        if selection.startline == selection.endline
+            if cursor_col < selection.startcol || cursor_col > selection.endcol
+                let s:counts[object] += 1
+                continue
+            endif
         endif
 
         let size = s:size(selection)
@@ -133,8 +135,9 @@ fu! s:select_text_object()
                 " line, the size of the text object is just one character less
                 continue
             endif
+            let line = getline("'<")
             let quote = strpart(object, 1)
-            let [before, after] = [getline("'<")[:selection.startcol-3], getline("'<")[selection.endcol+1:]]
+            let [before, after] = [line[:selection.startcol-3], line[selection.endcol+1:]]
             if s:odd_quotes(quote, before) || s:odd_quotes(quote, after)
                 continue
             endif
@@ -198,12 +201,10 @@ endfu
 " To return the size of a text object
 fu! s:size(selection)
     if a:selection.startline == a:selection.endline
-        let line = getline(a:selection.startline)
-        return strlen(strpart(line, a:selection.startcol, a:selection.endcol-a:selection.startcol+1))
+        return a:selection.endcol - a:selection.startcol + 1
     endif
-    let size = strlen(strpart(getline(a:selection.startline), a:selection.startcol))
-    let size += strlen(strpart(getline(a:selection.endline), 0, a:selection.endcol))
-    let size += winwidth(0) * abs(a:selection.startline - a:selection.endline)  " good enough
+    let size = len(getline(a:selection.startline)) - a:selection.startcol + a:selection.endcol
+    let size += winwidth(0) * (a:selection.endline - a:selection.startline)
     return size
 endfu
 
