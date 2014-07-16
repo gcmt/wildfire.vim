@@ -204,8 +204,8 @@ fu! s:size(selection)
     if a:selection.startline == a:selection.endline
         return a:selection.endcol - a:selection.startcol + 1
     endif
-    let size = len(getline(a:selection.startline)) - a:selection.startcol + a:selection.endcol
-    let size += winwidth(0) * (a:selection.endline - a:selection.startline)
+    let size = len(getline(a:selection.startline)) - a:selection.startcol + a:selection.endcol + 1
+    let size += winwidth(0) * (a:selection.endline - a:selection.startline - 1)
     return size
 endfu
 
