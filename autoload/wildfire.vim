@@ -228,11 +228,11 @@ fu! wildfire#QuickSelect(objects)
     while 1
         let last_hist_size = len(s:history)
         cal s:select_text_object()
-        let sel = get(s:history, -1).selection
-        if empty(sel)
+        if empty(s:history)
             return
         end
-        if sel.startline < line("w0")
+        let selection = get(s:history, -1).selection
+        if selection.startline < line("w0")
             cal wildfire#Water(1)
             break
         end
