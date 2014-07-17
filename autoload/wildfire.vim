@@ -232,7 +232,7 @@ fu! wildfire#QuickSelect(objects)
             return
         end
         let selection = get(s:history, -1).selection
-        if selection.startline < line("w0")
+        if selection.startline < line("w0") || selection.endline > line("w$")
             cal wildfire#Water(1)
             break
         end
@@ -275,7 +275,10 @@ fu s:jump(marks)
         redraw
         cal s:show_prompt()
         let choice = s:get_char()
-        if choice =~ "<C-C>\\|<ESC>" | cal s:clear_marks(a:marks)| break | end
+        if choice =~ '<C-C>\|<ESC>'
+            cal s:clear_marks(a:marks)
+            break
+        end
         if has_key(a:marks, choice)
             cal s:clear_marks(a:marks)
             cal s:select(a:marks[choice][0])
@@ -295,8 +298,8 @@ endfu
 fu s:clear_marks(marks)
     cal s:clear_matches("WildfireMark", "WildfireShade")
     try | undojoin | catch | endtry
-    for [sel, oldchar] in values(a:marks)
-        cal setline(sel.startline, s:str_subst(getline(sel.startline), sel.startcol-1, oldchar))
+    for [s, oldchar] in values(a:marks)
+        cal setline(s.startline, s:str_subst(getline(s.startline), s.startcol-1, oldchar))
     endfor
     setl nomodified
 endfu
@@ -319,7 +322,9 @@ endfu
 
 " To get the colors of given highlight group.
 fu s:colors_of(group)
-    redir => raw_hl | exe "hi" a:group | redir END
+    redir => raw_hl
+        exe "hi" a:group
+    redir END
     let raw_hl = substitute(raw_hl, "\n", " ", "")
     if match(raw_hl, 'cleared') >= 0
         return {"colors": "None", "link": ""}
