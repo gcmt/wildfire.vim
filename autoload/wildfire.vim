@@ -253,9 +253,14 @@ fu s:show_marks(selections)
     cal matchadd("WildfireShade", '\%>'.(line('w0')-1).'l\%<'.line('w$').'l')
     let marks = split(g:wildfire_marks, '\zs')
     let candidates = {}
+    let lastpos = [-1, -1]  " [line nr, column nr]
     for selection in a:selections
         if empty(marks) | break | end
+        if [selection.startline, selection.startcol] == lastpos
+            continue
+        end
         let mark = remove(marks, 0)
+        let lastpos = [selection.startline, selection.startcol]
         let line = getline(selection.startline)
         " line[selection.startcol-1] stands for the character replaced with the mark
         let candidates[mark] = [selection, line[selection.startcol-1]]
