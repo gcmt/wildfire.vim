@@ -252,20 +252,25 @@ fu s:show_marks(selections)
     try | undojoin | catch | endtry
     cal matchadd("WildfireShade", '\%>'.(line('w0')-1).'l\%<'.line('w$').'l')
     let marks = split(g:wildfire_marks, '\zs')
+    let placed_marks = {}
     let candidates = {}
-    let lastpos = [-1, -1]  " [line nr, column nr]
     for selection in a:selections
         if empty(marks) | break | end
-        if [selection.startline, selection.startcol] == lastpos
+        if !has_key(placed_marks, selection.startline . "," . selection.startcol)
+            let [mline, mcol] = [selection.startline, selection.startcol]
+        elseif !has_key(placed_marks, selection.endline . "," . selection.endcol)
+            let [mline, mcol] = [selection.endline, selection.endcol]
+        else
             continue
         end
+        let placed_marks[mline.",".mcol] = 1
         let mark = remove(marks, 0)
-        let lastpos = [selection.startline, selection.startcol]
-        let line = getline(selection.startline)
-        " line[selection.startcol-1] stands for the character replaced with the mark
-        let candidates[mark] = [selection, line[selection.startcol-1]]
-        cal setline(selection.startline, s:str_subst(line, selection.startcol-1, mark))
-        cal matchadd("WildfireMark", '\%'.selection.startline.'l\%'.selection.startcol.'c')
+        let candidates[mark] = [
+            \ selection,
+            \ {"line": mline, "col": mcol, "char": mark, "oldchar": getline(mline)[mcol-1]}
+        \ ]
+        cal setline(mline, s:str_subst(getline(mline), mcol-1, mark))
+        cal matchadd("WildfireMark", '\%'.mline.'l\%'.mcol.'c')
     endfor
     setl nomodified
     return candidates
@@ -302,8 +307,8 @@ endfu
 fu s:clear_marks(marks)
     cal s:clear_matches("WildfireMark", "WildfireShade")
     try | undojoin | catch | endtry
-    for [s, oldchar] in values(a:marks)
-        cal setline(s.startline, s:str_subst(getline(s.startline), s.startcol-1, oldchar))
+    for [s, mark] in values(a:marks)
+        cal setline(mark.line, s:str_subst(getline(mark.line), mark.col-1, mark.oldchar))
     endfor
     setl nomodified
 endfu
