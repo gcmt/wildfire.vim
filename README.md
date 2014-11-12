@@ -71,3 +71,9 @@ nmap <leader>s <Plug>(wildfire-quick-select)
 ```
 
 ![Preview](_assets/quickselect.gif "Quick select.")
+
+### Similar plugins
+
+- [vim-expand-region](https://github.com/terryma/vim-expand-region)
+- [vim-textobj-anyblock](https://github.com/rhysd/vim-textobj-anyblock)
+
