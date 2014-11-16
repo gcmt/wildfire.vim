@@ -382,7 +382,7 @@ fu s:get_char()
     elseif match(char, 'kd') > 0 | return "<DOWN>"
     elseif match(char, 'kl') > 0 | return "<LEFT>"
     elseif match(char, 'kr') > 0 | return "<RIGHT>"
-    elseif match(char, 'k\\d\\+') > 0 | return "<F" . match(char, '\\d\\+', 4)] . ">"
+    elseif match(char, 'k\\d\\+') > 0 | return "<F" . match(char, '\\d\\+', 4) . ">"
     end
 endfu
 
