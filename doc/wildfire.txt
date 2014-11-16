@@ -84,7 +84,6 @@ for different text object candidates:
     \ })
 <
 
-
 ==============================================================================
 4. Quick Selection                                  *wildfire-quick-selection*
 
@@ -99,8 +98,8 @@ something like the following line in your `.vimrc`:
 <
 
 By default, *quick selection* use text objects in `g:wildfire_objects` to set
-jump marks. Have a look at the example below if you want to use different text
-object without having to change `g:wildfire_objects`.
+"selection marks". Have a look at the example below if you want to use different
+text object without having to change `g:wildfire_objects`.
 >
     cal wildfire#triggers#AddQs("<leader>s", {
 	\ "*" : ["i)", "i]"],

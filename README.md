@@ -72,7 +72,7 @@ Wildfire does not set a default mapping for *quick selection*. Be sure to put so
 nmap <leader>s <Plug>(wildfire-quick-select)
 ```
 
-By default, *quick selection* use text objects in `g:wildfire_objects` to set jump marks. Have a look at the example below if you want to use different text object without having to change `g:wildfire_objects`.
+By default, *quick selection* use text objects in `g:wildfire_objects` to set "selection marks". Have a look at the example below if you want to use different text object without having to change `g:wildfire_objects`.
 
 ```vim
 cal wildfire#triggers#AddQs("<leader>s", {
