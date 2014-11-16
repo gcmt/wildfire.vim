@@ -13,7 +13,8 @@ CONTENTS                                                   *wildfire-contents*
 
         1. Intro ................................. |wildfire-intro|
         2. Usage ................................. |wildfire-usage|
-        3. Advanced usage ........................ |wildfire-advanced-usage|
+        3. Advanced Usage ........................ |wildfire-advanced-usage|
+        4. Quick Selection ....................... |wildfire-quick-selection|
         4. About ................................. |wildfire-about|
         5. License ............................... |wildfire-license|
 
@@ -55,7 +56,7 @@ option:
 <
 
 ==============================================================================
-3. Advanced usage                                    *wildfire-advanced-usage*
+3. Advanced Usage                                    *wildfire-advanced-usage*
 
 Sometimes considering certain kinds of text objects can be quite annoying. This
 is the case of Html, where, for example, you may want to select just tag objects.
@@ -83,8 +84,32 @@ for different text object candidates:
     \ })
 <
 
+
 ==============================================================================
-4. About                                                      *wildfire-about*
+4. Quick Selection                                  *wildfire-quick-selection*
+
+This feature allows you to quickly select text object by setting special marks
+(not vim marks) in the current buffer that represent growing selections
+(similarly to vim-easymotion).
+
+Wildfire does not set a default mapping for *quick selection*. Be sure to put
+something like the following line in your `.vimrc`:
+>
+    nmap <leader>s <Plug>(wildfire-quick-select)
+<
+
+By default, *quick selection* use text objects in `g:wildfire_objects` to set
+jump marks. Have a look at the example below if you want to use different text
+object without having to change `g:wildfire_objects`.
+>
+    cal wildfire#triggers#AddQs("<leader>s", {
+	\ "*" : ["i)", "i]"],
+    \ })
+<
+
+
+==============================================================================
+5. About                                                      *wildfire-about*
 
 Author: Giacomo Comitti
 Contributors: https://github.com/gcmt/wildfire.vim/contributors
@@ -92,7 +117,7 @@ Git repository: https://github.com/gcmt/wildfire.vim
 
 
 ==============================================================================
-5. License                                                  *wildfire-license*
+6. License                                                  *wildfire-license*
 
 Copyright (c) 2014 Giacomo Comitti
 

@@ -62,14 +62,27 @@ cal wildfire#triggers#Add("<ENTER>", {
 
 ### Quick selection
 
+A visual explanation often works far better than plain old words.
+
+![Preview](_assets/quickselect.gif "Quick selection.")
+
+Wildfire does not set a default mapping for *quick selection*. Be sure to put something like the following line in your `.vimrc`:
+
 ```vim
 nmap <leader>s <Plug>(wildfire-quick-select)
 ```
 
-![Preview](_assets/quickselect.gif "Quick select.")
+By default, *quick selection* use text objects in `g:wildfire_objects` to set jump marks. Have a look at the example below if you want to use different text object without having to change `g:wildfire_objects`.
+
+```vim
+cal wildfire#triggers#AddQs("<leader>s", {
+    \ "*" : ["i)", "i]"],
+\ })
+```
 
 ### Similar plugins
 
+Wildfire is not the only plugin who can smartly select text object. Be sure to have a look at the following plugins if Wildfire doesn't suit your needs:
+
 - [vim-expand-region](https://github.com/terryma/vim-expand-region)
 - [vim-textobj-anyblock](https://github.com/rhysd/vim-textobj-anyblock)
-
