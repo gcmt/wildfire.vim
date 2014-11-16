@@ -50,21 +50,17 @@ let g:wildfire_objects = {
 One problem with the solution above is that with `html` and `xml` files we loose the ability to select the text objects `i'`, `i"`, `i)`, `i]` and `i}`. To solve this problem, Wildfire allows you to use different mappings for different text object candidates:
 
 ```vim
-vmap <BS> <Plug>(wildfire-water)
-
 map <SPACE> <Plug>(wildfire-fuel)
 let g:wildfire_objects = {
     \ "*" : ["i'", 'i"', "i)", "i]", "i}"]
 \ }
 
-" As you can see, to add additional mappings we have to follow a simple convention
-map <ENTER> <Plug>(wildfire-fuel:tags)
-let g:wildfire_objects_tags = {
+cal wildfire#triggers#Add("<ENTER>", {
     \ "html,xml" : ["at", "it"],
-\ }
+\ })
 ```
 
-### Quick selection (experimental)
+### Quick selection
 
 ```vim
 nmap <leader>s <Plug>(wildfire-quick-select)
