@@ -103,10 +103,17 @@ fu! s:select_text_object()
         " Sometimes Vim selects text objects even if the cursor is outside the
         " them (e.g. `it`, `i"`, etc). We don't want this.
         if selection.startline == selection.endline
-            if s:origin[2] < selection.startcol || s:origin[2] > selection.endcol
+            if s:origin[2] < selection.startcol - 1 || s:origin[2] > selection.endcol + 1
                 let s:counts[object] += 1
                 continue
             endif
+        endif
+
+        " Check if the cursor is even within selection. If not, we obviously
+        " don't want that
+        if s:origin[1] < selection.startline || s:origin[1] > selection.endline
+            let s:counts[object] += 1
+            continue
         endif
 
         let size = s:size(selection)
