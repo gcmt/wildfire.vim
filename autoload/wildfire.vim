@@ -161,11 +161,34 @@ endfu
 fu! s:select_best_candidate(candidates)
     if len(a:candidates)
         " select the closest text object (the one with the smaller size)
-        let selection = a:candidates[min(keys(a:candidates))]
-        let s:history = add(s:history, {"selection": selection, "view": winsaveview()})
-        let s:counts[selection.object] += 1
-        cal s:select(selection)
-    elseif len(s:history)
+        " skip same size text-objects
+        let lastsize = 0
+        if len(s:history)
+            let lastsize = s:size(get(s:history, -1).selection)
+        endif
+        let m = -1
+        for ss in keys(a:candidates)
+            let s = str2nr(ss)
+            if s > lastsize && (m == -1 || s < m)
+                let m = s
+            endif
+        endfor
+        if m > -1
+            let selection = a:candidates[m]
+            let s:history = add(s:history, {"selection": selection, "view": winsaveview()})
+            let s:counts[selection.object] += 1
+            cal s:select(selection)
+        else
+            cal s:select_best_candidate_fallback()
+        endif
+    else
+        cal s:select_best_candidate_fallback()
+    endif
+endfu
+
+" Select best candidate fallback
+fu! s:select_best_candidate_fallback()
+    if len(s:history)
         " get stuck on the last selection
         cal s:select(get(s:history, -1).selection)
     else
